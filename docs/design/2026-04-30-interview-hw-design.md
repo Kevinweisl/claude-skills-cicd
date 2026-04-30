@@ -109,9 +109,13 @@
 |---|---|---|---|---|
 | `worker-ci` | alpine + git + node + python + semgrep + gitleaks | 1 GB | volume `/cache` | scale 1-3 |
 | `worker-extractor` | python:3.12 + edgartools + lxml + pdfplumber | 1 GB | - | Task 3 主力 |
-| `worker-browser` | `mcr.microsoft.com/playwright:v1.x-noble` | 2 GB (Pro plan) | volume `/profiles` | `--shm-size=2gb` 或 `--disable-dev-shm-usage` |
+| `worker-browser` | `mcr.microsoft.com/playwright:v1.x-noble` | 2 GB | volume `/profiles` | `--shm-size=2gb` 或 `--disable-dev-shm-usage` |
 
-預估 idle cost ~$5-8/mo（Free $5 credit + Dev plan $5）；browser worker 跑時 pay-as-you-go。
+**部署方案**：
+- **Local 開發**（Day 1-3）：全套 docker-compose 跑在本機，不碰 Zeabur
+- **Zeabur 部署**（Day 4 開始）：先用 Zeabur Dev plan ($5/mo, 4 GB RAM)
+- **Pro plan ($19/mo)** 只在 Day 6/7 browser worker 實測 OOM 時才升級
+- 預估總成本：$5（最差 $19，整個專案週期）
 
 ### 2.4 Skill 呼叫流程（端到端）
 
@@ -496,7 +500,8 @@ report:
 
 ### 5.8 部署考量
 - Worker image: `mcr.microsoft.com/playwright:v1.49-noble`
-- Pro plan 4 GB RAM
+- **Local-first**：先在本機 docker-compose 跑通，Day 6 才推上 Zeabur
+- Zeabur Dev plan ($5/mo, 4 GB RAM) 開始，**只有 OOM 才升級 Pro ($19/mo)**
 - `--shm-size=2gb` Dockerfile 設定
 - Volume `/profiles` 存 cookies / browser state
 - 並行限制：單 container 最多 2 tab，task queue 排程
@@ -511,7 +516,7 @@ interview_hw/
 ├── AI-Coding-Test-{EN,ZH}.md          # 原題目（不刪）
 ├── CLAUDE.md
 ├── docs/
-│   ├── superpowers/specs/2026-04-30-interview-hw-design.md  # 本檔
+│   ├── design/2026-04-30-interview-hw-design.md  # 本檔
 │   ├── research/2026-04-30-research-summary.md
 │   └── per-task/                      # 各題詳細 README
 │       ├── task1-skills-platform.md
@@ -568,12 +573,12 @@ interview_hw/
 
 | Day | 主軸 | 主要交付 | Hours |
 |---|---|---|---|
-| **Day 1 (5/1)** | 共通基建 | repo init, gateway + Postgres + Inngest + Redis 跑起來 (local), Zeabur 第一次部署 (hello world), prompts/ 結構, README skeleton | 10h |
-| **Day 2 (5/2)** | Task 3 Phase 1 | edgartools-based segmentation, era detection, status classifier (規則), 跑通 Apple 2024, 把 Apple 標註成第一個 gold | 10-12h |
-| **Day 3 (5/3)** | Task 3 Phase 2+3 | Char-offset alignment, LLM 增援, XBRL cross-check, 跑通 GE 2021 + Chemical 1995, 第二/三個 gold | 10-12h |
-| **Day 4 (5/4)** | Task 3 完成 + Task 1 平台 | 7 個 silver filings, eval runner, status report, deploy 到 Zeabur as production skill, lint-and-test + dependency-audit 兩個 skill 完成 + trigger eval | 10-12h |
-| **Day 5 (5/5)** | Task 1 完成 + Task 2 開頭 | build-and-release + security-scan, full skill trigger eval (40 query × 3 runs × 4 skills), deploy 平台到 Zeabur, Task 2 architecture skeleton + Stagehand-style selector cache | 10-12h |
-| **Day 6 (5/6)** | Task 2 完成 | Planner-Actor-Validator loop, locator ladder, eval runner, 跑通 30 task eval, finance pack 5 task, WebVoyager 10 task external validation | 10-12h |
+| **Day 1 (5/1)** | 共通基建 (local) | repo init, gateway + Postgres + Inngest + Redis 跑起來 (local docker-compose only), prompts/ 結構, README skeleton。**Zeabur 不碰** | 10h |
+| **Day 2 (5/2)** | Task 3 Phase 1 (local) | edgartools-based segmentation, era detection, status classifier (規則), 跑通 Apple 2024, 把 Apple 標註成第一個 gold | 10-12h |
+| **Day 3 (5/3)** | Task 3 Phase 2+3 (local) | Char-offset alignment, LLM 增援, XBRL cross-check, 跑通 GE 2021 + Chemical 1995, 第二/三個 gold | 10-12h |
+| **Day 4 (5/4)** | Task 3 完成 + 首次 Zeabur 部署 | 7 個 silver filings, eval runner, status report。**註冊 Zeabur + 第一次部署 Task 3 + extractor service** (Dev plan)。lint-and-test + dependency-audit 兩個 skill 完成 + trigger eval | 10-12h |
+| **Day 5 (5/5)** | Task 1 完成 + Task 2 開頭 | build-and-release + security-scan, full skill trigger eval (40 query × 3 runs × 4 skills), deploy 平台到 Zeabur, Task 2 architecture skeleton + Stagehand-style selector cache (local) | 10-12h |
+| **Day 6 (5/6)** | Task 2 完成 + 部署 | Planner-Actor-Validator loop, locator ladder, eval runner, 跑通 30 task eval, finance pack 5 task, WebVoyager 10 task external validation。**deploy browser worker to Zeabur Dev plan，OOM 才升 Pro** | 10-12h |
 | **Day 7 (5/7) 早上** | 收尾 | Held-out 自我測試（用沒看過的 filing/task）, README finalize, prompts/ 整理, Zeabur 上線檢查, 三個 endpoint smoke test, 提交 | 6-8h |
 
 ### 7.1 緩衝邏輯
@@ -654,7 +659,8 @@ interview_hw/
 | 風險 | 影響 | Mitigation |
 |---|---|---|
 | Task 3 完美主義 → 吃掉 Task 1/2 時間 | 全盤崩潰 | Day 4 結束 hard cut，剩餘 issue 寫進 known failures |
-| Zeabur browser worker 跑不起來 | Task 2 demo 不能 deploy | Plan B：Browserbase 託管 browser + Zeabur 跑 agent logic |
+| Zeabur 首次部署有坑（Day 4 才碰到） | Task 3 部署延誤 | Day 4 早上 8-9 點先做：註冊 + hello world container 部署，預留 2-3h debug。**hello world 不通就立刻投資排查，不能拖** |
+| Zeabur browser worker 跑不起來 | Task 2 demo 不能 deploy | Day 6 上線；先在本地 docker 100% 跑通才推。Plan B：Browserbase 託管（最後手段） |
 | Inngest self-host 一直壞 | 平台故障，三題都受影響 | Plan B：FastAPI BackgroundTasks + Postgres job table，10 行 code 替代 |
 | EDGAR rate limit block | Task 3 eval 跑不完 | Caching + 請求分散；本地保留 raw HTML cache |
 | LLM cost 超預算 | 預算崩潰 | 每 worker `cost_cap` env，超過 abort；Haiku 為主、Sonnet 點睛 |
