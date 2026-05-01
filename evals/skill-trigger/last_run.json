@@ -1,0 +1,2498 @@
+{
+  "per_query": [
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "ping the platform with hello",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "smoke test the skill platform",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "verify the gateway and worker are talking",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "run the hello skill",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "echo back this string via the platform",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "is the skills queue working \u2014 try a hello",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "platform liveness check",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "test that invoke + Postgres + worker \u2192 result actually fires",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "run a no-op skill end-to-end",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_trigger",
+      "query": "send a heartbeat through the platform",
+      "picked": "hello",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "hello"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "lint and test the codebase",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "audit my Python dependencies for CVEs",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "scan the repo for secrets",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "build a wheel and publish it",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "extract Item 1A from Apple's 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "log into the website and download the report",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "what's the weather today",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "explain how the worker pool works",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "show me the database schema",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "hello",
+      "expected_label": "should_not_trigger",
+      "query": "say hello to my team in Slack",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "run our linter and unit tests",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "lint and test the repo at HEAD",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "make sure the tests pass and there are no style issues",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "check that ruff is clean and pytest is green",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "run CI checks on this branch",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "verify the code: lint + tests",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "is the build healthy \u2014 lint and unit tests please",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "fail-fast pre-commit equivalent: lint then test",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "ESLint + jest run on the frontend",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_trigger",
+      "query": "do the standard lint-and-test pipeline",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "scan our dependencies for known vulnerabilities",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "check if any of our packages have CVEs",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "look for hard-coded API keys in the codebase",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "run SAST on the source tree",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "build and publish the docker image",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "deploy a release to PyPI",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "extract the financial data from this 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "navigate to gmail and compose an email",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "what does the lint config look like",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "lint-and-test",
+      "expected_label": "should_not_trigger",
+      "query": "explain how pytest fixtures work",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "ship version 2.4.0 to PyPI",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "build and publish the npm package",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "release the docker image to GHCR",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "cut a v1.2.3 release and push it",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "publish the wheel to our private index",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "tag and release this commit",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "build the container and push to the registry",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "deploy v3.0.0 \u2014 build, tag, and push",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "release pipeline: build artifact then upload",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_trigger",
+      "query": "make a new release of the SDK",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "run the unit tests before releasing (just the tests)",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "lint the codebase before we ship",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "scan for secrets in the git history",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "audit the deps for vulnerabilities",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "what's the current published version on PyPI (read-only)",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "list the Docker images in the registry",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "explain how docker tags work",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "extract Risk Factors from a 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "navigate to the release notes page",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "build-and-release",
+      "expected_label": "should_not_trigger",
+      "query": "show me what would change in the release notes",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "audit our Python dependencies for known vulnerabilities",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "run pip-audit on the project",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "are any of our npm packages CVE-flagged",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "check the Cargo lockfile for advisories",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "scan our deps for security issues",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "any vulnerabilities in our third-party libraries",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "GHSA check on package-lock.json",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "npm audit and report on the findings",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "check our requirements.txt against OSV",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_trigger",
+      "query": "identify packages with known CVEs in our manifest",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "scan our source code for SAST findings",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "check the codebase for hard-coded secrets",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "find SQL injection in our handlers",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "did we leak any API keys in the git history",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "lint the project and run tests",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "build and publish the wheel",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "extract Item 1A from a SEC 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "log into the dashboard and check the alerts",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "what's the diff between npm audit and pip-audit",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "dependency-audit",
+      "expected_label": "should_not_trigger",
+      "query": "explain how OSV.dev works",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "scan our codebase for SAST findings",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "check for hard-coded credentials in the repo",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "did we leak any AWS keys in the git history",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "run gitleaks on the project",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "find any SQL injection in our handlers",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "check for security anti-patterns in source code",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "semgrep the project and aggregate the findings",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "scan the docker image for CVEs",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "look for command injection or unsafe deserialization",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_trigger",
+      "query": "is our source code free of insecure crypto patterns",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "audit the package-lock.json for known CVEs",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "check our requirements.txt for vulnerable libs",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "run pip-audit",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "lint and test the codebase",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "build and release the artifact",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "extract Item 1C cybersecurity disclosure from a 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "navigate to the security dashboard in the browser",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "what's the difference between SAST and dependency audit",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "explain semgrep rule syntax",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "security-scan",
+      "expected_label": "should_not_trigger",
+      "query": "list the security policies in our org",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "extract Item 1A risk factors from Apple's 2024 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "parse the SEC 10-K with CIK 320193 accession 0000320193-24-000123",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "pull the financial statements section from this 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "compare cybersecurity disclosures (Item 1C) for Apple FY2024 vs FY2023",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "what's in Item 7 of Berkshire's 2024 annual report",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "give me the structured items from this Form 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "process the 10-K filing for Intel 2022",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "extract the per-item structured content from this SEC annual filing",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "parse 10-K to get Properties (Item 2) and Legal Proceedings (Item 3)",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_trigger",
+      "query": "structured extraction of MD&A from a 10-K",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "extract data from a 10-Q quarterly report (out of scope)",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "search SEC EDGAR for all Apple filings",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "pull the DEF 14A proxy statement",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "get the latest 8-K event filing",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "navigate the SEC EDGAR website and download something",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "lint and test the extraction code",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "audit the edgartools dependency for CVEs",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "build and release the extractor service",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "scan the extractor code for SAST findings",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "sec-extract-10k",
+      "expected_label": "should_not_trigger",
+      "query": "what's the difference between 10-K and 10-K/A",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "log into example.com with these creds and download the dashboard PDF",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "navigate to my bank's site and grab the latest statement",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "fill out the form on this URL and submit",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "this page needs JS to render \u2014 get the content",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "click through the checkout wizard and verify the total",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "scrape this auth-required dashboard",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "automate the upload flow on this internal portal",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "verify the news on Reuters about Apple's recent disclosures",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "navigate, click submit, then take a screenshot of the result",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_trigger",
+      "query": "interact with the React SPA and extract the table",
+      "picked": "browser-task",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "browser-task"
+        },
+        {
+          "voter": "mistral",
+          "pick": "browser-task"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "fetch this static HTML page (use curl)",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "GET the JSON API at /api/users",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "parse this SEC 10-K filing",
+      "picked": "sec-extract-10k",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "sec-extract-10k"
+        },
+        {
+          "voter": "mistral",
+          "pick": "sec-extract-10k"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "lint and test the codebase",
+      "picked": "lint-and-test",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "audit our npm dependencies for CVEs",
+      "picked": "dependency-audit",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "scan for secrets in the repo",
+      "picked": "security-scan",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "build and publish the package",
+      "picked": "build-and-release",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "what does Playwright do",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "explain headless Chrome",
+      "picked": "NONE",
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        }
+      ]
+    },
+    {
+      "target_skill": "browser-task",
+      "expected_label": "should_not_trigger",
+      "query": "ping the gateway",
+      "picked": "NONE",
+      "confidence": 0.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "NONE"
+        },
+        {
+          "voter": "mistral",
+          "pick": "hello"
+        }
+      ]
+    }
+  ],
+  "per_skill_summary": {
+    "hello": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    },
+    "lint-and-test": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    },
+    "build-and-release": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    },
+    "dependency-audit": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    },
+    "security-scan": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    },
+    "sec-extract-10k": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    },
+    "browser-task": {
+      "true_positive": 10,
+      "false_negative": 0,
+      "false_positive": 0,
+      "true_negative": 10,
+      "true_positive_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "n_should_trigger": 10,
+      "n_should_not_trigger": 10
+    }
+  },
+  "confusion_matrix": {
+    "hello": {
+      "hello": 10
+    },
+    "NONE": {
+      "lint-and-test": 7,
+      "dependency-audit": 9,
+      "security-scan": 10,
+      "build-and-release": 7,
+      "sec-extract-10k": 6,
+      "browser-task": 6,
+      "NONE": 25
+    },
+    "lint-and-test": {
+      "lint-and-test": 10
+    },
+    "build-and-release": {
+      "build-and-release": 10
+    },
+    "dependency-audit": {
+      "dependency-audit": 10
+    },
+    "security-scan": {
+      "security-scan": 10
+    },
+    "sec-extract-10k": {
+      "sec-extract-10k": 10
+    },
+    "browser-task": {
+      "browser-task": 10
+    }
+  },
+  "elapsed_s": 1232.5,
+  "skill_descriptions_evaluated": {
+    "browser-task": "Drive a real Chromium browser (via Playwright) to complete a multi-step web\ntask described in natural language \u2014 login, fill forms, navigate, click,\nextract page content, take screenshots. Use this when the user asks to\n\"log into a website and download X\", \"scrape this dashboard that requires\nauthentication\", \"fill out the form on this page\", \"navigate the site and\nclick through the wizard\", \"get the content from this JavaScript-rendered\npage\", \"verify the news on Reuters about Apple's 10-K disclosures\", or any\ntask that needs an actual browser (cookies, JS execution, DOM interaction).\nDo NOT use for: simple HTTP GETs of static pages (use a regular fetch),\nparsing structured documents like SEC filings (use sec-extract-10k), or\nbuild/release pipelines (use build-and-release). Long-running (minutes),\nstateful (cookies + selector cache), self-correcting (7-tier locator ladder).\n",
+    "build-and-release": "Build a Python wheel, npm package, or container image AND optionally push it\nto a registry \u2014 a side-effecting write operation. Use this when the user\nasks to \"release v1.2.3\", \"publish to PyPI\", \"twine upload\", \"npm publish\",\n\"ship a new version\", \"build and push the docker image to ghcr\", \"cut a\ngithub release\", \"tag and push\", \"deploy the SDK\", or any explicit\npublish/release request. For running tests or linters, use lint-and-test.\nFor SAST or secret scans on the source, use security-scan. For dependency\nCVE checks, use dependency-audit. This skill is human-gated:\ndisable-model-invocation prevents auto-routing \u2014 only explicit invocation\nruns it.\n",
+    "dependency-audit": "Scan a repository's dependency manifests (pyproject.toml/requirements.txt,\npackage.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES\nin third-party libraries using OSV/GHSA advisory databases. Use this when\nthe user asks to \"audit dependencies\", \"run pip-audit\", \"npm audit\", \"check\nfor vulnerable packages\", \"are any of my deps CVE-flagged\", \"is lodash\nsafe\", \"any CVEs in our packages\", \"scan our requirements.txt\", \"check our\nCargo.lock for advisories\", or \"any GHSA hits in our manifest\". For SAST or\nsecret scans on YOUR OWN source code, use security-scan. For lint/test, use\nlint-and-test. For build/publish, use build-and-release. Read-only. Returns\nSARIF-format vulnerability findings.\n",
+    "hello": "A dummy test skill that echoes back its input. Use only for platform health\nchecks, smoke testing the invoke pipeline, or demonstrating the request/response\nflow. This skill exists to verify gateway \u2192 Postgres queue \u2192 worker \u2192 result\nend-to-end without external dependencies.\n",
+    "lint-and-test": "Run the lint-then-test pipeline on a Python or Node repo at a specific commit\nand return a structured pass/fail report. Use this when the user asks to\n\"lint and test\", \"run CI checks\", \"run pytest\", \"type-check with mypy\",\n\"run prettier and the unit tests\", \"make sure ruff is clean and tests pass\",\n\"ESLint + jest\", or any combined static-check-plus-test request on a\nrepository. For dependency CVE checks, use dependency-audit instead. For\nSAST or hard-coded-secret scans, use security-scan. For building or\npublishing artifacts, use build-and-release. Read-only. Returns {ok,\nlint_passed, test_passed, summary, exit_code, durations}.\n",
+    "sec-extract-10k": "Extract SEC Form 10-K item-level structured content (Items 1, 1A, 1B, 1C, 2-4\nin Part I; 5-9C in Part II; 10-14 in Part III; 15-16 in Part IV) from a\nfiling identified by CIK + accession number. Use this when the user asks to\n\"extract the 10-K\", \"parse Item 1A risk factors\", \"get the financial\nstatements section\", \"pull the SEC annual report\", \"what's in Item 7 of\nApple's 10-K\", \"compare the cybersecurity disclosure across years\", or any\nrequest that names an SEC 10-K filing or specific 10-K Item. Do NOT use for:\n10-Q quarterly reports (out of scope), 8-K event filings, DEF 14A proxy\nstatements, or general SEC filing search (use SEC EDGAR full-text). Returns\nper-item structured records with status (extracted | incorporated_by_reference\n| not_applicable | reserved | partial | non_standard), char ranges, era\napplicability, and (optional) XBRL Company Facts cross-validation.\n",
+    "security-scan": "Scan a repository's OWN SOURCE CODE (not its dependencies) for SAST findings,\nhard-coded secrets/credentials, and (optionally) container-image CVEs in a\nbuilt docker image. Use this when the user asks to \"run semgrep\", \"run\ngitleaks\", \"run SAST\", \"find SQL injection in our handlers\", \"any hardcoded\npasswords in the codebase\", \"did we leak any API keys\", \"did we commit a\n.env\", \"scan our Dockerfile for misconfigs\", or \"scan the docker image for\nCVEs\". These are queries about CODE WE WROTE, not LIBRARIES WE IMPORTED.\nFor known CVEs in third-party packages (lodash, requests, etc.), use\ndependency-audit instead. For lint/test, use lint-and-test. For\nbuild/publish, use build-and-release. Read-only. Aggregates findings from\nSemgrep, gitleaks, and trivy with severity-weighted dedup.\n"
+  }
+}
