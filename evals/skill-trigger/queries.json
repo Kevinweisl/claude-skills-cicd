@@ -1,0 +1,195 @@
+{
+  "_comment": "Trigger-eval query corpus — 7 skills × (10 should + 10 should-not). Should-not queries include at least 3 sister-skill traps per skill (queries that plausibly belong to a sibling and test disambiguation). Each query is a natural user prompt; the eval asks Claude which skill it would invoke (or NONE).",
+  "_methodology": "Adapted from Anthropic skill-creator's run_loop.py. Vote across K=3 model families (DeepSeek + Nemotron + Mistral) per query for noise-robust scoring. Test set held out 40% per the methodology so iterative description edits don't overfit.",
+  "skills": {
+    "hello": {
+      "description_summary": "Smoke / liveness skill for the platform pipeline.",
+      "should_trigger": [
+        "ping the platform with hello",
+        "smoke test the skill platform",
+        "verify the gateway and worker are talking",
+        "run the hello skill",
+        "echo back this string via the platform",
+        "is the skills queue working — try a hello",
+        "platform liveness check",
+        "test that invoke + Postgres + worker → result actually fires",
+        "run a no-op skill end-to-end",
+        "send a heartbeat through the platform"
+      ],
+      "should_not_trigger": [
+        "lint and test the codebase",
+        "audit my Python dependencies for CVEs",
+        "scan the repo for secrets",
+        "build a wheel and publish it",
+        "extract Item 1A from Apple's 10-K",
+        "log into the website and download the report",
+        "what's the weather today",
+        "explain how the worker pool works",
+        "show me the database schema",
+        "say hello to my team in Slack"
+      ]
+    },
+    "lint-and-test": {
+      "description_summary": "Run lint then test on a Python or Node repo.",
+      "should_trigger": [
+        "run our linter and unit tests",
+        "lint and test the repo at HEAD",
+        "make sure the tests pass and there are no style issues",
+        "check that ruff is clean and pytest is green",
+        "run CI checks on this branch",
+        "verify the code: lint + tests",
+        "is the build healthy — lint and unit tests please",
+        "fail-fast pre-commit equivalent: lint then test",
+        "ESLint + jest run on the frontend",
+        "do the standard lint-and-test pipeline"
+      ],
+      "should_not_trigger": [
+        "scan our dependencies for known vulnerabilities",
+        "check if any of our packages have CVEs",
+        "look for hard-coded API keys in the codebase",
+        "run SAST on the source tree",
+        "build and publish the docker image",
+        "deploy a release to PyPI",
+        "extract the financial data from this 10-K",
+        "navigate to gmail and compose an email",
+        "what does the lint config look like",
+        "explain how pytest fixtures work"
+      ]
+    },
+    "build-and-release": {
+      "description_summary": "Build artifact + push to registry. Side-effecting write.",
+      "should_trigger": [
+        "ship version 2.4.0 to PyPI",
+        "build and publish the npm package",
+        "release the docker image to GHCR",
+        "cut a v1.2.3 release and push it",
+        "publish the wheel to our private index",
+        "tag and release this commit",
+        "build the container and push to the registry",
+        "deploy v3.0.0 — build, tag, and push",
+        "release pipeline: build artifact then upload",
+        "make a new release of the SDK"
+      ],
+      "should_not_trigger": [
+        "run the unit tests before releasing (just the tests)",
+        "lint the codebase before we ship",
+        "scan for secrets in the git history",
+        "audit the deps for vulnerabilities",
+        "what's the current published version on PyPI (read-only)",
+        "list the Docker images in the registry",
+        "explain how docker tags work",
+        "extract Risk Factors from a 10-K",
+        "navigate to the release notes page",
+        "show me what would change in the release notes"
+      ]
+    },
+    "dependency-audit": {
+      "description_summary": "Scan dependency manifests for known CVEs/GHSA advisories.",
+      "should_trigger": [
+        "audit our Python dependencies for known vulnerabilities",
+        "run pip-audit on the project",
+        "are any of our npm packages CVE-flagged",
+        "check the Cargo lockfile for advisories",
+        "scan our deps for security issues",
+        "any vulnerabilities in our third-party libraries",
+        "GHSA check on package-lock.json",
+        "npm audit and report on the findings",
+        "check our requirements.txt against OSV",
+        "identify packages with known CVEs in our manifest"
+      ],
+      "should_not_trigger": [
+        "scan our source code for SAST findings",
+        "check the codebase for hard-coded secrets",
+        "find SQL injection in our handlers",
+        "did we leak any API keys in the git history",
+        "lint the project and run tests",
+        "build and publish the wheel",
+        "extract Item 1A from a SEC 10-K",
+        "log into the dashboard and check the alerts",
+        "what's the diff between npm audit and pip-audit",
+        "explain how OSV.dev works"
+      ]
+    },
+    "security-scan": {
+      "description_summary": "Source code SAST + secrets + container CVE scanning.",
+      "should_trigger": [
+        "scan our codebase for SAST findings",
+        "check for hard-coded credentials in the repo",
+        "did we leak any AWS keys in the git history",
+        "run gitleaks on the project",
+        "find any SQL injection in our handlers",
+        "check for security anti-patterns in source code",
+        "semgrep the project and aggregate the findings",
+        "scan the docker image for CVEs",
+        "look for command injection or unsafe deserialization",
+        "is our source code free of insecure crypto patterns"
+      ],
+      "should_not_trigger": [
+        "audit the package-lock.json for known CVEs",
+        "check our requirements.txt for vulnerable libs",
+        "run pip-audit",
+        "lint and test the codebase",
+        "build and release the artifact",
+        "extract Item 1C cybersecurity disclosure from a 10-K",
+        "navigate to the security dashboard in the browser",
+        "what's the difference between SAST and dependency audit",
+        "explain semgrep rule syntax",
+        "list the security policies in our org"
+      ]
+    },
+    "sec-extract-10k": {
+      "description_summary": "Extract item-level structured content from a SEC 10-K filing.",
+      "should_trigger": [
+        "extract Item 1A risk factors from Apple's 2024 10-K",
+        "parse the SEC 10-K with CIK 320193 accession 0000320193-24-000123",
+        "pull the financial statements section from this 10-K",
+        "compare cybersecurity disclosures (Item 1C) for Apple FY2024 vs FY2023",
+        "what's in Item 7 of Berkshire's 2024 annual report",
+        "give me the structured items from this Form 10-K",
+        "process the 10-K filing for Intel 2022",
+        "extract the per-item structured content from this SEC annual filing",
+        "parse 10-K to get Properties (Item 2) and Legal Proceedings (Item 3)",
+        "structured extraction of MD&A from a 10-K"
+      ],
+      "should_not_trigger": [
+        "extract data from a 10-Q quarterly report (out of scope)",
+        "search SEC EDGAR for all Apple filings",
+        "pull the DEF 14A proxy statement",
+        "get the latest 8-K event filing",
+        "navigate the SEC EDGAR website and download something",
+        "lint and test the extraction code",
+        "audit the edgartools dependency for CVEs",
+        "build and release the extractor service",
+        "scan the extractor code for SAST findings",
+        "what's the difference between 10-K and 10-K/A"
+      ]
+    },
+    "browser-task": {
+      "description_summary": "Real Chromium browser automation for multi-step web tasks.",
+      "should_trigger": [
+        "log into example.com with these creds and download the dashboard PDF",
+        "navigate to my bank's site and grab the latest statement",
+        "fill out the form on this URL and submit",
+        "this page needs JS to render — get the content",
+        "click through the checkout wizard and verify the total",
+        "scrape this auth-required dashboard",
+        "automate the upload flow on this internal portal",
+        "verify the news on Reuters about Apple's recent disclosures",
+        "navigate, click submit, then take a screenshot of the result",
+        "interact with the React SPA and extract the table"
+      ],
+      "should_not_trigger": [
+        "fetch this static HTML page (use curl)",
+        "GET the JSON API at /api/users",
+        "parse this SEC 10-K filing",
+        "lint and test the codebase",
+        "audit our npm dependencies for CVEs",
+        "scan for secrets in the repo",
+        "build and publish the package",
+        "what does Playwright do",
+        "explain headless Chrome",
+        "ping the gateway"
+      ]
+    }
+  }
+}

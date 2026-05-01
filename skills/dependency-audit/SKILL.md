@@ -3,14 +3,14 @@ name: dependency-audit
 description: |
   Scan a repository's dependency manifests (pyproject.toml/requirements.txt,
   package.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES
-  in the dependency tree using OSV/GHSA advisory databases. Use this when the
-  user asks to "audit dependencies", "check for vulnerable packages", "are any
-  of my deps CVE-flagged", "run pip-audit", "npm audit", "check for
-  vulnerabilities in third-party libs", or any vulnerability check **at the
-  dependency tree** level. Do NOT use for: scanning the project's own source
-  code for SAST findings or secrets (use security-scan), running tests or
-  lints (use lint-and-test), or building artifacts (use build-and-release).
-  Read-only. Returns SARIF-format vulnerability findings.
+  in third-party libraries using OSV/GHSA advisory databases. Use this when
+  the user asks to "audit dependencies", "run pip-audit", "npm audit", "check
+  for vulnerable packages", "are any of my deps CVE-flagged", "is lodash
+  safe", "any CVEs in our packages", "scan our requirements.txt", "check our
+  Cargo.lock for advisories", or "any GHSA hits in our manifest". For SAST or
+  secret scans on YOUR OWN source code, use security-scan. For lint/test, use
+  lint-and-test. For build/publish, use build-and-release. Read-only. Returns
+  SARIF-format vulnerability findings.
 allowed-tools: "Bash(pip-audit *) Bash(npm audit --json) Bash(cargo audit *) Bash(osv-scanner *)"
 worker_target: ci
 ---

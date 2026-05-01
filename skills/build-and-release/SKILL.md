@@ -2,14 +2,15 @@
 name: build-and-release
 description: |
   Build a Python wheel, npm package, or container image AND optionally push it
-  to a registry — a side-effecting write operation. Use this when the user asks
-  to "release", "publish", "ship a new version", "push to PyPI", "build and
-  push the docker image", "cut a release", or any explicit publish/release
-  request. Do NOT use for: simply running tests or linters (use lint-and-test),
-  scanning the build for secrets (use security-scan), checking dependencies for
-  vulnerabilities (use dependency-audit), or read-only "show me the build
-  config" requests. Side-effecting WRITE — `disable-model-invocation: true` so
-  Claude must be explicitly directed by the human to invoke this skill.
+  to a registry — a side-effecting write operation. Use this when the user
+  asks to "release v1.2.3", "publish to PyPI", "twine upload", "npm publish",
+  "ship a new version", "build and push the docker image to ghcr", "cut a
+  github release", "tag and push", "deploy the SDK", or any explicit
+  publish/release request. For running tests or linters, use lint-and-test.
+  For SAST or secret scans on the source, use security-scan. For dependency
+  CVE checks, use dependency-audit. This skill is human-gated:
+  disable-model-invocation prevents auto-routing — only explicit invocation
+  runs it.
 allowed-tools: "Bash(python -m build) Bash(npm run build) Bash(npm publish *) Bash(docker build *) Bash(docker push *) Bash(git tag *)"
 worker_target: ci
 disable-model-invocation: true

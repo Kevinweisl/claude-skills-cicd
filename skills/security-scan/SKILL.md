@@ -3,14 +3,15 @@ name: security-scan
 description: |
   Scan a repository's OWN SOURCE CODE (not its dependencies) for SAST findings,
   hard-coded secrets/credentials, and (optionally) container-image CVEs in a
-  built docker image. Use this when the user asks to "scan for secrets",
-  "check for hard-coded credentials", "run SAST", "find SQL injection", "scan
-  the docker image for CVEs", "look for security anti-patterns in our code",
-  "did we leak any API keys", or any source-code-level security check. Do NOT
-  use for: dependency vulnerability checks at the package-manifest level (use
-  dependency-audit), running tests/linters (use lint-and-test), or
-  building/publishing artifacts (use build-and-release). Read-only. Aggregates
-  findings from Semgrep, gitleaks, and trivy with severity-weighted dedup.
+  built docker image. Use this when the user asks to "run semgrep", "run
+  gitleaks", "run SAST", "find SQL injection in our handlers", "any hardcoded
+  passwords in the codebase", "did we leak any API keys", "did we commit a
+  .env", "scan our Dockerfile for misconfigs", or "scan the docker image for
+  CVEs". These are queries about CODE WE WROTE, not LIBRARIES WE IMPORTED.
+  For known CVEs in third-party packages (lodash, requests, etc.), use
+  dependency-audit instead. For lint/test, use lint-and-test. For
+  build/publish, use build-and-release. Read-only. Aggregates findings from
+  Semgrep, gitleaks, and trivy with severity-weighted dedup.
 allowed-tools: "Bash(semgrep *) Bash(gitleaks *) Bash(trivy *) Bash(bandit *) Bash(git *)"
 worker_target: ci
 ---

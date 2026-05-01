@@ -3,12 +3,13 @@ name: lint-and-test
 description: |
   Run the lint-then-test pipeline on a Python or Node repo at a specific commit
   and return a structured pass/fail report. Use this when the user asks to
-  "lint and test", "run CI checks", "verify the code", "make sure tests pass",
-  "check style and run pytest", or any combined static-check-plus-test request
-  on a repository. Do NOT use for: dependency vulnerability audits (use
-  dependency-audit), source-code security scanning for credentials/SAST findings
-  (use security-scan), or building/publishing artifacts (use build-and-release).
-  Read-only. Returns {ok, lint_passed, test_passed, summary, exit_code, durations}.
+  "lint and test", "run CI checks", "run pytest", "type-check with mypy",
+  "run prettier and the unit tests", "make sure ruff is clean and tests pass",
+  "ESLint + jest", or any combined static-check-plus-test request on a
+  repository. For dependency CVE checks, use dependency-audit instead. For
+  SAST or hard-coded-secret scans, use security-scan. For building or
+  publishing artifacts, use build-and-release. Read-only. Returns {ok,
+  lint_passed, test_passed, summary, exit_code, durations}.
 allowed-tools: "Bash(ruff *) Bash(pytest *) Bash(npm *) Bash(git *)"
 worker_target: ci
 ---
