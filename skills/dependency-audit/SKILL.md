@@ -1,73 +1,90 @@
 ---
 name: dependency-audit
-description: |
-  Scan a repository's dependency manifests (pyproject.toml/requirements.txt,
-  package.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES
-  in third-party libraries using OSV/GHSA advisory databases. Use this when
-  the user asks to "audit dependencies", "run pip-audit", "npm audit", "check
-  for vulnerable packages", "are any of my deps CVE-flagged", "is lodash
-  safe", "any CVEs in our packages", "scan our requirements.txt", "check our
-  Cargo.lock for advisories", or "any GHSA hits in our manifest". For SAST or
-  secret scans on YOUR OWN source code, use security-scan. For lint/test, use
-  lint-and-test. For build/publish, use build-and-release. Read-only. Returns
-  SARIF-format vulnerability findings.
-allowed-tools: "Bash(pip-audit *) Bash(npm audit --json) Bash(cargo audit *) Bash(osv-scanner *)"
-worker_target: ci
+description: Scan a repository's dependency manifests (pyproject.toml/requirements.txt, package.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES in third-party libraries using OSV/GHSA advisory databases. Use this when the user asks to "audit dependencies", "run pip-audit", "npm audit", "check for vulnerable packages", "are any of my deps CVE-flagged", "is lodash safe", "any CVEs in our packages", "scan our requirements.txt", "check our Cargo.lock for advisories", or "any GHSA hits in our manifest". For SAST or secret scans on YOUR OWN source code, use security-scan. For lint/test, use lint-and-test. For build/publish, use build-and-release. Read-only.
+allowed-tools: Bash(git clone:*), Bash(python:*), Bash(./skills/dependency-audit/scripts/run.py:*), Bash(rm -rf /tmp/skill_sandbox*)
 ---
 
 # dependency-audit
 
-Scan dependency manifests for known vulnerabilities by polling OSV/GHSA
-advisory databases. Multi-ecosystem auto-detection: a single skill that
-identifies the project's ecosystem from manifest filenames and routes to the
-appropriate tool.
+Scan dependency manifests across multiple ecosystems and report known CVEs from OSV/GHSA advisory databases. **Read-only**.
 
-## Pattern: Read-only, multi-ecosystem routing
+## When to use
 
-| Manifest detected | Tool | Advisory DB |
-|---|---|---|
-| `pyproject.toml` / `requirements.txt` / `Pipfile.lock` | `pip-audit` | OSV + PyPI Advisory Database |
-| `package-lock.json` / `yarn.lock` | `npm audit --json` | GHSA |
-| `Cargo.lock` | `cargo audit` | RustSec Advisory DB |
-| `go.sum` | `osv-scanner` | OSV |
+Trigger when the user asks about CVEs / advisories / vulnerabilities in **third-party libraries** (not their own code):
 
-Findings from each tool are **normalized to SARIF** (Static Analysis Results
-Interchange Format) so downstream callers don't have to know per-tool output
-schemas. Severity uses CVSS v3 if present, else GHSA's qualitative tier.
+- "audit deps of psf/requests"
+- "any CVEs in our package-lock.json"
+- "check if lodash is safe"
+- "run pip-audit on this repo"
 
-Caching: `lockfile_hash + advisory_db_date` — re-running the same lockfile
-against an unchanged advisory DB is a no-op.
+**Don't use for**: SAST / secrets / SQL injection / hardcoded passwords in **the user's own code** → use `security-scan`. Lint/test → `lint-and-test`. Build/publish → `build-and-release`.
 
-## Boundary distinction (this is NOT security-scan)
+## How to use
 
-`dependency-audit` looks at YOUR DEPENDENCIES (third-party libraries pulled in
-via package manifests) for KNOWN CVE/GHSA advisories.
+### Step 1 — get the repo onto disk
 
-`security-scan` looks at YOUR OWN SOURCE CODE for SAST findings (insecure
-patterns), secrets in commits, and container CVEs in your built image.
+If a `https://github.com/...` URL was given, clone shallowly:
 
-A user query like "scan my project for security issues" is ambiguous — it
-could mean either. The trigger eval includes such queries to verify Claude
-disambiguates correctly via these descriptions.
-
-## Input
-```json
-{
-  "repo_path": "/abs/path/to/repo",     // optional, defaults to cwd
-  "ecosystems": ["python", "node"]      // optional, default: auto-detect all manifests
-}
+```bash
+SANDBOX=/tmp/skill_sandbox/audit-$$
+git clone --depth=1 --branch <REF> <REPO_URL> $SANDBOX
 ```
 
-## Output
+If a local path was given, use it directly.
+
+### Step 2 — run the script
+
+```bash
+python skills/dependency-audit/scripts/run.py \
+    --repo-path $SANDBOX \
+    [--ecosystems python,node,rust,go]   # optional; default detects all
+```
+
+The script auto-detects ecosystems from manifest files (`pyproject.toml`, `package-lock.json`, `Cargo.lock`, `go.sum`) and runs the appropriate auditor:
+
+- **python** → `pip-audit`
+- **node** → `npm audit`
+- **rust** → `cargo audit`
+- **go** → `govulncheck`
+
+Skipped silently if the auditor binary isn't installed (recorded in output).
+
+### Step 3 — interpret the JSON
+
 ```json
 {
   "ok": true,
+  "ecosystems_detected": ["python", "node"],
   "findings_by_ecosystem": {
-    "python": {"tool": "pip-audit", "vulnerabilities": [...]},
-    "node": {"tool": "npm-audit", "vulnerabilities": [...]}
+    "python": {
+      "tool": "pip-audit",
+      "vulnerabilities": [
+        {"package": "requests", "id": "GHSA-xxxx", "severity": "high",
+         "fix_versions": ["2.32.0"]}
+      ]
+    },
+    "node": { "tool": "npm-audit", "vulnerabilities": [...] }
   },
-  "sarif": {...},
-  "summary": {"critical": 0, "high": 2, "medium": 5, "low": 1, "total": 8},
-  "cache_key": "<sha256>"
+  "summary": {"critical": 0, "high": 1, "medium": 0, "low": 0, "total": 1},
+  "cache_key": "..."
 }
 ```
+
+If `ecosystems_detected` is empty, the repo has no recognized manifest files — tell the user this skill doesn't apply.
+
+If a per-ecosystem entry has `error: "binary not installed"`, the auditor isn't on PATH; mention this so the user knows the result is partial.
+
+For each vulnerability, surface `package`, `id` (CVE/GHSA), `severity`, and `fix_versions` if present.
+
+### Step 4 — clean up
+
+```bash
+rm -rf /tmp/skill_sandbox/audit-*
+```
+
+## Boundaries
+
+- **Read-only.** Never modifies the manifest or installs anything.
+- **Third-party only.** Will not flag issues in the user's own source code.
+- **Auditor binaries optional** — missing tools are reported, not crashed on.
+- **No platform errors raised** — script always exits 0; branch on `result.ok`.
