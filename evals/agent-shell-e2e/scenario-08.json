@@ -1,0 +1,30 @@
+{
+  "n": 8,
+  "name": "Local-path sanity (use this repo)",
+  "skill": "lint-and-test",
+  "input": {
+    "repo": "/Users/kevinwei/src/interview_hw"
+  },
+  "expected": "ok depends on this repo's lint/test status; language=python",
+  "elapsed_s": 0.6,
+  "result": {
+    "lint": {
+      "tool": "ruff",
+      "passed": false,
+      "exit_code": -1,
+      "issues": [],
+      "duration_ms": 1
+    },
+    "test": {
+      "tool": "pytest",
+      "passed": false,
+      "exit_code": 2,
+      "summary": "9 error",
+      "duration_ms": 559,
+      "timed_out": false
+    },
+    "language": "python",
+    "ok": false,
+    "cache_key": "244a9ecda51d61778e66842c518892b24ce75aeb98d7bf9d52cb97cc3743e3f8"
+  }
+}

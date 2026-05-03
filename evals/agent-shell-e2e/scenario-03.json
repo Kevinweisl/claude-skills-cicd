@@ -1,0 +1,32 @@
+{
+  "n": 3,
+  "name": "dependency-audit on psf/requests",
+  "skill": "dependency-audit",
+  "input": {
+    "repo": "https://github.com/psf/requests",
+    "ref": "main"
+  },
+  "expected": "ok=true, ecosystems_detected includes 'python'",
+  "elapsed_s": 1.3,
+  "result": {
+    "ok": true,
+    "findings_by_ecosystem": {
+      "python": {
+        "tool": "pip-audit",
+        "error": "binary not installed",
+        "vulnerabilities": []
+      }
+    },
+    "summary": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 0
+    },
+    "ecosystems_detected": [
+      "python"
+    ],
+    "cache_key": "3a58fcba268316d4ca21da0c4eddd445598d8fc80d5db2b3afccc03273c863d0"
+  }
+}

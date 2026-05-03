@@ -27,8 +27,15 @@ SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
 
 
 def _build_cli_args(name: str, input_args: dict, repo_path: Path) -> list[str]:
-    """Translate {repo, ref, ...} dict → argparse flags."""
+    """Translate {repo, ref, ...} dict → argparse flags.
+
+    `ref` is forwarded as `--commit-sha` to scripts that support it
+    (currently lint-and-test) so cache_key is deterministic on input.
+    """
     cli: list[str] = ["--repo-path", str(repo_path)]
+    ref = input_args.get("ref")
+    if name == "lint-and-test" and ref:
+        cli.extend(["--commit-sha", str(ref)])
     for k, v in input_args.items():
         if k in ("repo", "ref"):
             continue
@@ -61,7 +68,15 @@ def run_skill(name: str, input_args: dict) -> dict:
     sandbox: Path | None = None
 
     try:
-        if repo_arg.startswith("https://github.com/"):
+        # URL inputs: only https://github.com/ is allowed (delegates to git_fetch
+        # for the actual prefix check and shallow clone).
+        # Everything else is treated as a local absolute path.
+        looks_like_url = (
+            "://" in repo_arg
+            or repo_arg.startswith("git@")
+            or repo_arg.startswith("ssh:")
+        )
+        if looks_like_url:
             sandbox = Path(tempfile.mkdtemp(prefix="skill_sandbox_"))
             try:
                 fetch_repo(

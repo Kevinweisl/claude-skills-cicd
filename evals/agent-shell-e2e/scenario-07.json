@@ -1,0 +1,15 @@
+{
+  "n": 7,
+  "name": "Nonexistent github repo",
+  "skill": "lint-and-test",
+  "input": {
+    "repo": "https://github.com/this-org-does-not-exist-12345/nope",
+    "ref": "main"
+  },
+  "expected": "ok=false, git clone failed",
+  "elapsed_s": 0.7,
+  "result": {
+    "ok": false,
+    "error": "git clone failed (exit=128): \u6b63\u8907\u88fd\u5230 '/var/folders/v1/vy53gph519s6yjl12dwssmkc0000gn/T/skill_sandbox_1jicrp0w/repo'...\nremote: Repository not found.\n\u81f4\u547d\u932f\u8aa4\uff1a\u7248\u672c\u5eab 'https://github.com/this-org-does-not-exist-12345/nope/' \u672a\u627e\u5230\n"
+  }
+}

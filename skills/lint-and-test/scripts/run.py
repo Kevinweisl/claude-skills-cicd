@@ -115,7 +115,9 @@ def main() -> int:
         p = repo / f
         if p.exists():
             lockfile_h += hashlib.sha256(p.read_bytes()).hexdigest()[:16]
-    cache_key = hash_inputs([str(repo), args.commit_sha, language, lockfile_h])
+    # cache_key is content-based on purpose — same lockfile + same ref + same
+    # language → same key, regardless of where the repo is checked out.
+    cache_key = hash_inputs([args.commit_sha, language, lockfile_h])
 
     if language == "python":
         result = run_python(repo)

@@ -1,0 +1,14 @@
+{
+  "n": 6,
+  "name": "URL guard \u2014 gitlab.com rejected",
+  "skill": "lint-and-test",
+  "input": {
+    "repo": "https://gitlab.com/foo/bar"
+  },
+  "expected": "ok=false, error mentions only https://github.com/",
+  "elapsed_s": 0.0,
+  "result": {
+    "ok": false,
+    "error": "only https://github.com/ URLs allowed (got: 'https://gitlab.com/foo/bar')"
+  }
+}

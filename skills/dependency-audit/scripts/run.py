@@ -23,6 +23,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from _shared.subprocess_helper import hash_inputs, run_subprocess  # noqa: E402
 
+import hashlib
+
+
+def _manifest_hash(repo: Path) -> str:
+    """Hash of all manifest files combined — used in cache_key."""
+    h = hashlib.sha256()
+    for f in ("pyproject.toml", "requirements.txt", "package-lock.json",
+              "yarn.lock", "Cargo.lock", "go.sum"):
+        p = repo / f
+        if p.exists():
+            h.update(p.read_bytes())
+    return h.hexdigest()[:32]
+
 
 def _detect_ecosystems(repo: Path) -> list[str]:
     detected = []
@@ -175,7 +188,8 @@ def main() -> int:
         "findings_by_ecosystem": findings_by_ecosystem,
         "summary": summary,
         "ecosystems_detected": detected,
-        "cache_key": hash_inputs([str(repo), *sorted(detected)]),
+        # cache_key is content-based: ecosystem set + manifest hashes.
+        "cache_key": hash_inputs([*sorted(detected), _manifest_hash(repo)]),
     }
     print(json.dumps(output, indent=2))
     return 0

@@ -199,7 +199,7 @@ async def main_async() -> int:
             "scan_types_run": [], "secrets_redacted_in_output": True,
             "tokens_redacted_count": 0,
             "warnings": [warning],
-            "cache_key": hash_inputs([str(repo), *sorted(scan_types)]),
+            "cache_key": hash_inputs([*sorted(scan_types)]),
         }, indent=2))
         return 0
 
@@ -220,7 +220,7 @@ async def main_async() -> int:
         "scan_types_run": tools_run,
         "secrets_redacted_in_output": True,
         "tokens_redacted_count": redactions,
-        "cache_key": hash_inputs([str(repo), *sorted(scan_types)]),
+        "cache_key": hash_inputs([*sorted(scan_types)]),
     }
     print(json.dumps(output, indent=2))
     return 0

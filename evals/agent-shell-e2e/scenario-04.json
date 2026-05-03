@@ -1,0 +1,84 @@
+{
+  "n": 4,
+  "name": "security-scan on psf/requests",
+  "skill": "security-scan",
+  "input": {
+    "repo": "https://github.com/psf/requests",
+    "ref": "main",
+    "scan_types": "sast,secrets"
+  },
+  "expected": "ok=true, secrets_redacted_in_output=true",
+  "elapsed_s": 7.9,
+  "result": {
+    "ok": true,
+    "findings": [
+      {
+        "tool": "semgrep",
+        "rule_id": "python.lang.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1",
+        "file": "src/requests/auth.py",
+        "line": 156,
+        "severity": "warning",
+        "message": "Detected SHA1 hash algorithm which is considered insecure. SHA1 is not collision resistant and is therefore not suitable as a cryptographic signature. Use SHA256 or SHA3 instead."
+      },
+      {
+        "tool": "semgrep",
+        "rule_id": "python.lang.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1",
+        "file": "src/requests/auth.py",
+        "line": 205,
+        "severity": "warning",
+        "message": "Detected SHA1 hash algorithm which is considered insecure. SHA1 is not collision resistant and is therefore not suitable as a cryptographic signature. Use SHA256 or SHA3 instead."
+      },
+      {
+        "tool": "semgrep",
+        "rule_id": "python.lang.security.audit.non-literal-import.non-literal-import",
+        "file": "src/requests/compat.py",
+        "line": 36,
+        "severity": "warning",
+        "message": "Untrusted user input in `importlib.import_module()` function allows an attacker to load arbitrary code. Avoid dynamic values in `importlib.import_module()` or use a whitelist to prevent running untrusted code."
+      },
+      {
+        "tool": "gitleaks",
+        "rule_id": "private-key",
+        "file": "tests/certs/expired/ca/ca-private.key",
+        "line": 1,
+        "severity": "critical",
+        "message": "secret leak: Identified a Private Key, which may compromise cryptographic security and sensit"
+      },
+      {
+        "tool": "gitleaks",
+        "rule_id": "private-key",
+        "file": "tests/certs/expired/server/server.key",
+        "line": 1,
+        "severity": "critical",
+        "message": "secret leak: Identified a Private Key, which may compromise cryptographic security and sensit"
+      },
+      {
+        "tool": "gitleaks",
+        "rule_id": "private-key",
+        "file": "tests/certs/mtls/client/client.key",
+        "line": 1,
+        "severity": "critical",
+        "message": "secret leak: Identified a Private Key, which may compromise cryptographic security and sensit"
+      },
+      {
+        "tool": "gitleaks",
+        "rule_id": "private-key",
+        "file": "tests/certs/valid/server/server.key",
+        "line": 1,
+        "severity": "critical",
+        "message": "secret leak: Identified a Private Key, which may compromise cryptographic security and sensit"
+      }
+    ],
+    "by_severity": {
+      "warning": 3,
+      "critical": 4
+    },
+    "scan_types_run": [
+      "semgrep",
+      "gitleaks"
+    ],
+    "secrets_redacted_in_output": true,
+    "tokens_redacted_count": 0,
+    "cache_key": "1ba488082e90ec7087e874b9aa4364862e8edd6f570a39cdb056f64a4c22e2a5"
+  }
+}

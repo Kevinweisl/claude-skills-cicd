@@ -1,0 +1,21 @@
+{
+  "n": 5,
+  "name": "build-and-release wheel on Hello-World (no pyproject \u2192 graceful fail)",
+  "skill": "build-and-release",
+  "input": {
+    "repo": "https://github.com/octocat/Hello-World",
+    "ref": "master",
+    "target": "wheel",
+    "version": "0.1.0"
+  },
+  "expected": "ok=false, error contains 'build failed' or similar",
+  "elapsed_s": 0.8,
+  "result": {
+    "ok": false,
+    "target": "wheel",
+    "error": "build failed",
+    "stderr_tail": "/Users/kevinwei/miniforge3/bin/python: No module named build\n",
+    "version": "0.1.0",
+    "dry_run": true
+  }
+}

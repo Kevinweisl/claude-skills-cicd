@@ -1,0 +1,17 @@
+{
+  "n": 2,
+  "name": "lint-and-test idempotency (same input \u2192 same cache_key)",
+  "skill": "lint-and-test",
+  "input": {
+    "repo": "https://github.com/octocat/Hello-World",
+    "ref": "master"
+  },
+  "expected": "cache_key matches scenario 1's cache_key",
+  "elapsed_s": 0.8,
+  "result": {
+    "ok": false,
+    "error": "unsupported language: unknown (no pyproject.toml or package.json found)",
+    "language": "unknown",
+    "cache_key": "2566ffd1e538c96f5a8a2f094cb074979ac9dfafe74496085b09bfe0a41e5940"
+  }
+}
