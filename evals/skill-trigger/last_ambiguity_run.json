@@ -1,0 +1,300 @@
+{
+  "per_query": [],
+  "per_skill_summary": {},
+  "confusion_matrix": {},
+  "ambiguity_results": [
+    {
+      "query": "lint, test, then audit our deps for CVEs",
+      "primary": "lint-and-test",
+      "also_acceptable": [
+        "dependency-audit"
+      ],
+      "picked": "lint-and-test",
+      "is_pass": true,
+      "voters_in_allowed_count": 3,
+      "voters_total": 3,
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "qwen",
+          "pick": "lint-and-test"
+        }
+      ],
+      "duration_s": 15.841,
+      "note": "Compound action; lint-and-test is the first verb but dependency-audit is also a valid first call if Claude decomposes"
+    },
+    {
+      "query": "release this once lint passes",
+      "primary": "lint-and-test",
+      "also_acceptable": [
+        "build-and-release"
+      ],
+      "picked": "build-and-release",
+      "is_pass": true,
+      "voters_in_allowed_count": 3,
+      "voters_total": 3,
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "qwen",
+          "pick": "build-and-release"
+        }
+      ],
+      "duration_s": 55.396,
+      "note": "Lint-first phrasing \u2014 lint is the gating verb. build-and-release after lint passes is also defensible"
+    },
+    {
+      "query": "before I publish, scan the source for hardcoded keys and audit deps",
+      "primary": "security-scan",
+      "also_acceptable": [
+        "dependency-audit"
+      ],
+      "picked": "security-scan",
+      "is_pass": true,
+      "voters_in_allowed_count": 2,
+      "voters_total": 3,
+      "confidence": 0.67,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "qwen",
+          "pick": "NONE"
+        }
+      ],
+      "duration_s": 17.991,
+      "note": "Two scan asks; gitleaks (security-scan) is the more specific match for 'hardcoded keys' even though deps audit is also requested"
+    },
+    {
+      "query": "is this repo safe to release \u2014 check vulns and secrets",
+      "primary": "security-scan",
+      "also_acceptable": [
+        "dependency-audit"
+      ],
+      "picked": "security-scan",
+      "is_pass": true,
+      "voters_in_allowed_count": 2,
+      "voters_total": 3,
+      "confidence": 0.67,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "qwen",
+          "pick": "NONE"
+        }
+      ],
+      "duration_s": 55.182,
+      "note": "'vulns and secrets' splits across the two scan skills; either is a valid first call"
+    },
+    {
+      "query": "make sure ruff passes and there's no leaked AWS keys",
+      "primary": "lint-and-test",
+      "also_acceptable": [
+        "security-scan"
+      ],
+      "picked": "lint-and-test",
+      "is_pass": true,
+      "voters_in_allowed_count": 3,
+      "voters_total": 3,
+      "confidence": 0.67,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "qwen",
+          "pick": "security-scan"
+        }
+      ],
+      "duration_s": 90.204,
+      "note": "ruff is unambiguous lint; AWS keys is unambiguous gitleaks \u2014 Claude must pick one to start"
+    },
+    {
+      "query": "ship v2.4.0 \u2014 but only if pip-audit comes back clean",
+      "primary": "dependency-audit",
+      "also_acceptable": [
+        "build-and-release"
+      ],
+      "picked": "dependency-audit",
+      "is_pass": true,
+      "voters_in_allowed_count": 3,
+      "voters_total": 3,
+      "confidence": 0.67,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "build-and-release"
+        },
+        {
+          "voter": "mistral",
+          "pick": "dependency-audit"
+        },
+        {
+          "voter": "qwen",
+          "pick": "dependency-audit"
+        }
+      ],
+      "duration_s": 56.362,
+      "note": "build-and-release is the goal but conditioned on dependency-audit passing first; either is valid"
+    },
+    {
+      "query": "run all the CI checks: lint, test, audit, scan",
+      "primary": "lint-and-test",
+      "also_acceptable": [
+        "dependency-audit",
+        "security-scan"
+      ],
+      "picked": "lint-and-test",
+      "is_pass": true,
+      "voters_in_allowed_count": 2,
+      "voters_total": 3,
+      "confidence": 0.67,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        },
+        {
+          "voter": "qwen",
+          "pick": "lint-and-test"
+        }
+      ],
+      "duration_s": 63.657,
+      "note": "Explicit 4-skill compound \u2014 any of the read-only skills is a valid first move; build-and-release is NOT acceptable because it's not a CI check"
+    },
+    {
+      "query": "find SQL injection in our handlers and check if our ORM has any CVEs",
+      "primary": "security-scan",
+      "also_acceptable": [
+        "dependency-audit"
+      ],
+      "picked": "security-scan",
+      "is_pass": true,
+      "voters_in_allowed_count": 3,
+      "voters_total": 3,
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "mistral",
+          "pick": "security-scan"
+        },
+        {
+          "voter": "qwen",
+          "pick": "security-scan"
+        }
+      ],
+      "duration_s": 67.918,
+      "note": "Classic SAST-vs-deps disambiguation but with both intentionally requested. SAST first is the expected dominant verb"
+    },
+    {
+      "query": "do a complete pre-release check on the repo",
+      "primary": "lint-and-test",
+      "also_acceptable": [
+        "dependency-audit",
+        "security-scan"
+      ],
+      "picked": "lint-and-test",
+      "is_pass": true,
+      "voters_in_allowed_count": 2,
+      "voters_total": 3,
+      "confidence": 0.67,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "NONE"
+        },
+        {
+          "voter": "qwen",
+          "pick": "lint-and-test"
+        }
+      ],
+      "duration_s": 69.888,
+      "note": "Vague 'complete check' \u2014 any of the three read-only skills is a defensible first step. build-and-release would be wrong (release is not the action requested)"
+    },
+    {
+      "query": "I'm about to npm publish \u2014 is everything green",
+      "primary": "lint-and-test",
+      "also_acceptable": [
+        "dependency-audit",
+        "security-scan"
+      ],
+      "picked": "lint-and-test",
+      "is_pass": true,
+      "voters_in_allowed_count": 3,
+      "voters_total": 3,
+      "confidence": 1.0,
+      "votes": [
+        {
+          "voter": "nemotron",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "mistral",
+          "pick": "lint-and-test"
+        },
+        {
+          "voter": "qwen",
+          "pick": "lint-and-test"
+        }
+      ],
+      "duration_s": 82.591,
+      "note": "'Everything green' implies CI gates, not the publish itself. Build-and-release is wrong because the user is checking before pushing the publish button"
+    }
+  ],
+  "elapsed_s": 90.2,
+  "skill_descriptions_evaluated": {
+    "browser-task": "Drive a real Chromium browser (via Playwright) to complete a multi-step web\ntask described in natural language \u2014 login, fill forms, navigate, click,\nextract page content, take screenshots. Use this when the user asks to\n\"log into a website and download X\", \"scrape this dashboard that requires\nauthentication\", \"fill out the form on this page\", \"navigate the site and\nclick through the wizard\", \"get the content from this JavaScript-rendered\npage\", \"verify the news on Reuters about Apple's 10-K disclosures\", or any\ntask that needs an actual browser (cookies, JS execution, DOM interaction).\nDo NOT use for: simple HTTP GETs of static pages (use a regular fetch),\nparsing structured documents like SEC filings (use sec-extract-10k), or\nbuild/release pipelines (use build-and-release). Long-running (minutes),\nstateful (cookies + selector cache), self-correcting (7-tier locator ladder).\n",
+    "build-and-release": "Build a Python wheel, npm package, or Docker image AND optionally push it to a registry \u2014 a side-effecting write operation. Use this when the user asks to \"release v1.2.3\", \"publish to PyPI\", \"twine upload\", \"npm publish\", \"ship a new version\", \"build and push the docker image to ghcr\", \"cut a github release\", \"tag and push\", \"deploy the SDK\", or any explicit publish/release request. For running tests or linters, use lint-and-test. For SAST or secret scans, use security-scan. For dependency CVE checks, use dependency-audit.",
+    "dependency-audit": "Scan a repository's dependency manifests (pyproject.toml/requirements.txt, package.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES in third-party libraries using OSV/GHSA advisory databases. Use this when the user asks to \"audit dependencies\", \"run pip-audit\", \"npm audit\", \"check for vulnerable packages\", \"are any of my deps CVE-flagged\", \"is lodash safe\", \"any CVEs in our packages\", \"scan our requirements.txt\", \"check our Cargo.lock for advisories\", or \"any GHSA hits in our manifest\". For SAST or secret scans on YOUR OWN source code, use security-scan. For lint/test, use lint-and-test. For build/publish, use build-and-release. Read-only.",
+    "hello": "A dummy test skill that echoes back its input. Use only for platform health\nchecks, smoke testing the invoke pipeline, or demonstrating the request/response\nflow. This skill exists to verify gateway \u2192 Postgres queue \u2192 worker \u2192 result\nend-to-end without external dependencies.\n",
+    "lint-and-test": "Run the lint-then-test pipeline on a Python or Node repository and return a structured pass/fail report. Use this when the user asks to \"lint and test\", \"run CI checks\", \"run pytest\", \"type-check with mypy\", \"run prettier and the unit tests\", \"make sure ruff is clean and tests pass\", \"ESLint + jest\", or any combined static-check-plus-test request on a repository. For dependency CVE checks, use dependency-audit instead. For SAST or hard-coded-secret scans, use security-scan. For building or publishing artifacts, use build-and-release. Read-only.",
+    "sec-extract-10k": "Extract SEC Form 10-K item-level structured content (Items 1, 1A, 1B, 1C, 2-4\nin Part I; 5-9C in Part II; 10-14 in Part III; 15-16 in Part IV) from a\nfiling identified by CIK + accession number. Use this when the user asks to\n\"extract the 10-K\", \"parse Item 1A risk factors\", \"get the financial\nstatements section\", \"pull the SEC annual report\", \"what's in Item 7 of\nApple's 10-K\", \"compare the cybersecurity disclosure across years\", or any\nrequest that names an SEC 10-K filing or specific 10-K Item. Do NOT use for:\n10-Q quarterly reports (out of scope), 8-K event filings, DEF 14A proxy\nstatements, or general SEC filing search (use SEC EDGAR full-text). Returns\nper-item structured records with status (extracted | incorporated_by_reference\n| not_applicable | reserved | partial | non_standard), char ranges, era\napplicability, and (optional) XBRL Company Facts cross-validation.\n",
+    "security-scan": "Scan a repository's OWN SOURCE CODE (not its dependencies) for SAST findings, hard-coded secrets/credentials, and (optionally) container-image CVEs in a built docker image. Use this when the user asks to \"run semgrep\", \"run gitleaks\", \"run SAST\", \"find SQL injection in our handlers\", \"any hardcoded passwords in the codebase\", \"did we leak any API keys\", \"did we commit a .env\", \"scan our Dockerfile for misconfigs\", or \"scan the docker image for CVEs\". These are queries about CODE WE WROTE, not LIBRARIES WE IMPORTED. For known CVEs in third-party packages (lodash, requests, etc.), use dependency-audit instead. For lint/test, use lint-and-test. For build/publish, use build-and-release. Read-only."
+  }
+}

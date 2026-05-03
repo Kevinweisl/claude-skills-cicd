@@ -191,5 +191,68 @@
         "ping the gateway"
       ]
     }
-  }
+  },
+  "_ambiguity_methodology": "Cross-domain prompts that genuinely span 2+ skills. Pass = picked is in {primary} ∪ also_acceptable. Tests robustness when a user's natural-language ask doesn't decompose neatly into one skill — the dominant intent should win, but adjacent skills are also acceptable. NONE is never acceptable here (a skill genuinely applies).",
+  "ambiguity_cases": [
+    {
+      "query": "lint, test, then audit our deps for CVEs",
+      "primary_skill": "lint-and-test",
+      "also_acceptable": ["dependency-audit"],
+      "note": "Compound action; lint-and-test is the first verb but dependency-audit is also a valid first call if Claude decomposes"
+    },
+    {
+      "query": "release this once lint passes",
+      "primary_skill": "lint-and-test",
+      "also_acceptable": ["build-and-release"],
+      "note": "Lint-first phrasing — lint is the gating verb. build-and-release after lint passes is also defensible"
+    },
+    {
+      "query": "before I publish, scan the source for hardcoded keys and audit deps",
+      "primary_skill": "security-scan",
+      "also_acceptable": ["dependency-audit"],
+      "note": "Two scan asks; gitleaks (security-scan) is the more specific match for 'hardcoded keys' even though deps audit is also requested"
+    },
+    {
+      "query": "is this repo safe to release — check vulns and secrets",
+      "primary_skill": "security-scan",
+      "also_acceptable": ["dependency-audit"],
+      "note": "'vulns and secrets' splits across the two scan skills; either is a valid first call"
+    },
+    {
+      "query": "make sure ruff passes and there's no leaked AWS keys",
+      "primary_skill": "lint-and-test",
+      "also_acceptable": ["security-scan"],
+      "note": "ruff is unambiguous lint; AWS keys is unambiguous gitleaks — Claude must pick one to start"
+    },
+    {
+      "query": "ship v2.4.0 — but only if pip-audit comes back clean",
+      "primary_skill": "dependency-audit",
+      "also_acceptable": ["build-and-release"],
+      "note": "build-and-release is the goal but conditioned on dependency-audit passing first; either is valid"
+    },
+    {
+      "query": "run all the CI checks: lint, test, audit, scan",
+      "primary_skill": "lint-and-test",
+      "also_acceptable": ["dependency-audit", "security-scan"],
+      "note": "Explicit 4-skill compound — any of the read-only skills is a valid first move; build-and-release is NOT acceptable because it's not a CI check"
+    },
+    {
+      "query": "find SQL injection in our handlers and check if our ORM has any CVEs",
+      "primary_skill": "security-scan",
+      "also_acceptable": ["dependency-audit"],
+      "note": "Classic SAST-vs-deps disambiguation but with both intentionally requested. SAST first is the expected dominant verb"
+    },
+    {
+      "query": "do a complete pre-release check on the repo",
+      "primary_skill": "lint-and-test",
+      "also_acceptable": ["dependency-audit", "security-scan"],
+      "note": "Vague 'complete check' — any of the three read-only skills is a defensible first step. build-and-release would be wrong (release is not the action requested)"
+    },
+    {
+      "query": "I'm about to npm publish — is everything green",
+      "primary_skill": "lint-and-test",
+      "also_acceptable": ["dependency-audit", "security-scan"],
+      "note": "'Everything green' implies CI gates, not the publish itself. Build-and-release is wrong because the user is checking before pushing the publish button"
+    }
+  ]
 }

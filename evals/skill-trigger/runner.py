@@ -40,20 +40,41 @@ try:
 except ImportError:
     pass
 
-from gateway.manifest_scanner import parse_skill_md  # noqa: E402
 from shared.llm_client import vote_role  # noqa: E402
+
+import yaml  # noqa: E402
 
 NONE_LABEL = "NONE"
 
 
+def _parse_skill_frontmatter(md_path: Path) -> dict:
+    """Read YAML frontmatter from a SKILL.md. Returns {name, description, ...}."""
+    text = md_path.read_text()
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---\n", 4)
+    if end < 0:
+        return {}
+    return yaml.safe_load(text[4:end]) or {}
+
+
 def _load_skill_descriptions(skills_dir: Path) -> dict[str, str]:
-    """Read every skills/*/SKILL.md and return {name: description}."""
+    """Read every skills/*/SKILL.md and return {name: description}.
+
+    Skips underscore-prefixed dirs (e.g. _shared).
+    """
     out: dict[str, str] = {}
     for skill_dir in sorted(skills_dir.iterdir()):
+        if not skill_dir.is_dir() or skill_dir.name.startswith("_"):
+            continue
         md = skill_dir / "SKILL.md"
-        if md.exists():
-            info = parse_skill_md(md)
-            out[info["name"]] = info["description"]
+        if not md.exists():
+            continue
+        fm = _parse_skill_frontmatter(md)
+        name = fm.get("name", skill_dir.name)
+        desc = fm.get("description", "")
+        if desc:
+            out[name] = desc
     return out
 
 
@@ -103,11 +124,16 @@ def _parse_skill_pick(raw: str, valid_skills: set[str]) -> str:
 
 async def evaluate_query(
     skill_descs: dict[str, str], query: str,
-) -> tuple[str, float, list]:
-    """Returns (picked_skill, confidence, raw_votes_list)."""
+) -> tuple[str, float, list, float]:
+    """Returns (picked_skill, confidence, raw_votes_list, duration_s).
+
+    duration_s is wall-clock for the K=N parallel vote (the slowest voter
+    dominates), so per-query latency tracking is meaningful for cost reports.
+    """
     valid = set(skill_descs)
     messages = _build_messages(skill_descs, query)
     parser = lambda raw: _parse_skill_pick(raw, valid)
+    t0 = time.perf_counter()
     vote = await vote_role(
         "trigger_eval",
         messages=messages,
@@ -117,7 +143,8 @@ async def evaluate_query(
         temperature=0.0,
         timeout=60.0,
     )
-    return vote.pick, vote.confidence, vote.votes
+    duration_s = time.perf_counter() - t0
+    return vote.pick, vote.confidence, vote.votes, duration_s
 
 
 def _build_skill_summary(per_query, target_skill):
@@ -160,11 +187,17 @@ def _build_confusion_matrix(per_query) -> dict:
 
 
 async def run_eval(queries_file: Path, skills_dir: Path,
-                   *, only_skill: str | None = None) -> dict:
+                   *, only_skill: str | None = None,
+                   only_ambiguity: bool = False) -> dict:
     spec = json.loads(queries_file.read_text())
     skill_descs = _load_skill_descriptions(skills_dir)
     skills_in_corpus = list(spec["skills"])
-    eval_skills = [only_skill] if only_skill else skills_in_corpus
+    if only_ambiguity:
+        eval_skills: list[str] = []
+    elif only_skill:
+        eval_skills = [only_skill]
+    else:
+        eval_skills = skills_in_corpus
 
     per_query: list[dict] = []
     t0 = time.perf_counter()
@@ -192,10 +225,11 @@ async def run_eval(queries_file: Path, skills_dir: Path,
                     "picked": "ERROR",
                     "confidence": 0.0,
                     "votes": [],
+                    "duration_s": 0.0,
                     "error": f"{type(res).__name__}: {res}",
                 })
                 continue
-            picked, confidence, votes = res
+            picked, confidence, votes, duration_s = res
             per_query.append({
                 "target_skill": target_skill,
                 "expected_label": label,
@@ -203,6 +237,50 @@ async def run_eval(queries_file: Path, skills_dir: Path,
                 "picked": picked,
                 "confidence": round(confidence, 2),
                 "votes": [{"voter": v[0], "pick": v[1]} for v in votes],
+                "duration_s": round(duration_s, 3),
+            })
+
+    # Cross-domain ambiguity cases — pass = picked in {primary} ∪ also_acceptable
+    ambiguity_results: list[dict] = []
+    cases = spec.get("ambiguity_cases", [])
+    if cases and (only_ambiguity or not only_skill):
+        print(f"\n[ambiguity] running {len(cases)} cross-domain cases...", flush=True)
+        amb_results = await asyncio.gather(*(
+            evaluate_query(skill_descs, c["query"]) for c in cases
+        ), return_exceptions=True)
+        for case, res in zip(cases, amb_results, strict=True):
+            allowed = {case["primary_skill"]} | set(case.get("also_acceptable", []))
+            if isinstance(res, BaseException):
+                ambiguity_results.append({
+                    "query": case["query"],
+                    "primary": case["primary_skill"],
+                    "also_acceptable": case.get("also_acceptable", []),
+                    "picked": "ERROR",
+                    "is_pass": False,
+                    "confidence": 0.0,
+                    "votes": [],
+                    "duration_s": 0.0,
+                    "note": case.get("note", ""),
+                    "error": f"{type(res).__name__}: {res}",
+                })
+                continue
+            picked, conf, votes, duration_s = res
+            voters_in_allowed = sum(1 for v in votes if v[1] in allowed)
+            ambiguity_results.append({
+                "query": case["query"],
+                "primary": case["primary_skill"],
+                "also_acceptable": case.get("also_acceptable", []),
+                "picked": picked,
+                "is_pass": picked in allowed,
+                # Lenient signal: did ANY individual voter land in the allowed
+                # set? Useful for diagnosing K=N tie-break NONE-fallbacks where
+                # the majority rule masks per-voter agreement.
+                "voters_in_allowed_count": voters_in_allowed,
+                "voters_total": len(votes),
+                "confidence": round(conf, 2),
+                "votes": [{"voter": v[0], "pick": v[1]} for v in votes],
+                "duration_s": round(duration_s, 3),
+                "note": case.get("note", ""),
             })
 
     elapsed = time.perf_counter() - t0
@@ -218,6 +296,7 @@ async def run_eval(queries_file: Path, skills_dir: Path,
         "per_query": per_query,
         "per_skill_summary": per_skill_summary,
         "confusion_matrix": confusion,
+        "ambiguity_results": ambiguity_results,
         "elapsed_s": round(elapsed, 1),
         "skill_descriptions_evaluated": skill_descs,
     }
@@ -268,6 +347,35 @@ def print_markdown_report(report: dict) -> None:
             print(f"- **{kind}** {q['target_skill']}: query={q['query']!r}, "
                   f"picked={q['picked']!r}, conf={q['confidence']}")
 
+    amb = report.get("ambiguity_results", [])
+    if amb:
+        passed = sum(1 for a in amb if a.get("is_pass"))
+        any_voter_passed = sum(
+            1 for a in amb if a.get("voters_in_allowed_count", 0) > 0
+        )
+        print()
+        print(f"## Ambiguity cases — {passed}/{len(amb)} pass (strict majority); "
+              f"{any_voter_passed}/{len(amb)} pass (lenient: any voter in allowed)")
+        print()
+        print("| # | Query | Picked | Allowed | Pass? |")
+        print("|---|---|---|---|---|")
+        for i, a in enumerate(amb, 1):
+            allowed_set = [a["primary"]] + list(a.get("also_acceptable", []))
+            mark = "✅" if a["is_pass"] else "❌"
+            short_q = a["query"] if len(a["query"]) <= 60 else a["query"][:57] + "..."
+            print(f"| {i} | `{short_q}` | `{a['picked']}` | "
+                  f"`{','.join(allowed_set)}` | {mark} |")
+        fails = [a for a in amb if not a["is_pass"]]
+        if fails:
+            print()
+            print("### Ambiguity failures")
+            print()
+            for a in fails:
+                print(f"- query: `{a['query']}`")
+                print(f"  - picked: `{a['picked']}` (conf={a['confidence']})")
+                print(f"  - allowed: `{[a['primary'], *a.get('also_acceptable', [])]}`")
+                print(f"  - note: {a.get('note', '')}")
+
 
 def main() -> int:
     p = argparse.ArgumentParser()
@@ -276,6 +384,8 @@ def main() -> int:
     p.add_argument("--skills-dir", type=Path, default=ROOT / "skills")
     p.add_argument("--skill", type=str, default=None,
                    help="Run only this skill's queries (for iterative tuning)")
+    p.add_argument("--only-ambiguity", action="store_true",
+                   help="Skip per-skill batches; run only the cross-domain cases")
     p.add_argument("--out", type=Path,
                    default=Path(__file__).resolve().parent / "last_run.json")
     args = p.parse_args()
@@ -285,12 +395,20 @@ def main() -> int:
         return 2
 
     report = asyncio.run(run_eval(args.queries_file, args.skills_dir,
-                                  only_skill=args.skill))
+                                  only_skill=args.skill,
+                                  only_ambiguity=args.only_ambiguity))
     args.out.write_text(json.dumps(report, indent=2, default=str))
     print_markdown_report(report)
     print(f"\n(Raw votes saved to {args.out})")
 
     # Exit code reflects: any skill TPR < 0.8 OR FPR > 0.2 → non-zero
+    # Ambiguity-only runs gate on >=70% pass rate instead.
+    if args.only_ambiguity:
+        amb = report.get("ambiguity_results", [])
+        if not amb:
+            return 0
+        passed = sum(1 for a in amb if a.get("is_pass"))
+        return 0 if passed / len(amb) >= 0.7 else 1
     bad = any(
         s["true_positive_rate"] < 0.8 or s["false_positive_rate"] > 0.2
         for s in report["per_skill_summary"].values()
