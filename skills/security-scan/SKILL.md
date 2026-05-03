@@ -1,78 +1,91 @@
 ---
 name: security-scan
-description: |
-  Scan a repository's OWN SOURCE CODE (not its dependencies) for SAST findings,
-  hard-coded secrets/credentials, and (optionally) container-image CVEs in a
-  built docker image. Use this when the user asks to "run semgrep", "run
-  gitleaks", "run SAST", "find SQL injection in our handlers", "any hardcoded
-  passwords in the codebase", "did we leak any API keys", "did we commit a
-  .env", "scan our Dockerfile for misconfigs", or "scan the docker image for
-  CVEs". These are queries about CODE WE WROTE, not LIBRARIES WE IMPORTED.
-  For known CVEs in third-party packages (lodash, requests, etc.), use
-  dependency-audit instead. For lint/test, use lint-and-test. For
-  build/publish, use build-and-release. Read-only. Aggregates findings from
-  Semgrep, gitleaks, and trivy with severity-weighted dedup.
-allowed-tools: "Bash(semgrep *) Bash(gitleaks *) Bash(trivy *) Bash(bandit *) Bash(git *)"
-worker_target: ci
+description: Scan a repository's OWN SOURCE CODE (not its dependencies) for SAST findings, hard-coded secrets/credentials, and (optionally) container-image CVEs in a built docker image. Use this when the user asks to "run semgrep", "run gitleaks", "run SAST", "find SQL injection in our handlers", "any hardcoded passwords in the codebase", "did we leak any API keys", "did we commit a .env", "scan our Dockerfile for misconfigs", or "scan the docker image for CVEs". These are queries about CODE WE WROTE, not LIBRARIES WE IMPORTED. For known CVEs in third-party packages (lodash, requests, etc.), use dependency-audit instead. For lint/test, use lint-and-test. For build/publish, use build-and-release. Read-only.
+allowed-tools: Bash(git clone:*), Bash(python:*), Bash(./skills/security-scan/scripts/run.py:*), Bash(rm -rf /tmp/skill_sandbox*)
 ---
 
 # security-scan
 
-Source-code security scanner that runs three orthogonal tools in parallel and
-aggregates their findings into a single severity-ranked report.
+Run SAST + secrets scanners (Semgrep, Bandit, gitleaks; optionally trivy for container CVEs) in parallel and aggregate findings. **Read-only**.
 
-## Pattern: Multi-tool orchestration with severity-weighted aggregation
+## When to use
 
-| Tool | What it finds |
-|---|---|
-| **Semgrep** | SAST patterns (SQL injection, XSS, insecure crypto, command injection, hardcoded secrets matched by rule) |
-| **gitleaks** | Hard-coded secrets in git history (API keys, AWS access keys, JWT tokens, OpenAI keys, Anthropic keys) |
-| **trivy** | Container image CVEs (when a docker image is provided) and IaC misconfigurations |
-| **bandit** (Python only) | Python-specific security anti-patterns |
+Trigger when the user asks about issues in **their own source code** (not third-party deps):
 
-Findings are deduplicated by `(file, line, rule_id)` — Semgrep and bandit can
-both flag the same Python file/line, and we count that as one finding (highest
-severity wins). Output is SARIF-compatible.
+- "run semgrep on this repo"
+- "any hardcoded passwords in our codebase"
+- "find SQL injection in our handlers"
+- "did we accidentally commit a `.env`"
+- "scan the docker image for CVEs"
 
-## Boundary distinction (this is NOT dependency-audit)
+**Don't use for**: known CVEs in third-party libraries → `dependency-audit`. Lint/test → `lint-and-test`. Build/publish → `build-and-release`.
 
-`security-scan` looks at YOUR OWN SOURCE CODE: secrets in your commits, SAST
-findings in your handlers, misconfigurations in your Dockerfile.
+## How to use
 
-`dependency-audit` looks at YOUR THIRD-PARTY DEPENDENCIES (libraries pulled in
-via package manifests) for known CVEs/GHSA advisories.
+### Step 1 — get the repo onto disk
 
-For the prompt "scan my repo for security problems" — both could apply. The
-two skills coexisting in trigger eval intentionally tests this disambiguation.
+If a `https://github.com/...` URL was given, clone shallowly:
 
-## Input
-```json
-{
-  "repo_path": "/abs/path/to/repo",       // optional, defaults to cwd
-  "scan_types": ["sast", "secrets"],      // default: ["sast", "secrets"]; "container" requires `image_name`
-  "image_name": "ghcr.io/org/repo:tag"    // optional, for container scan
-}
+```bash
+SANDBOX=/tmp/skill_sandbox/scan-$$
+git clone --depth=1 --branch <REF> <REPO_URL> $SANDBOX
 ```
 
-## Output
+If a local path was given, use it directly.
+
+### Step 2 — run the script
+
+```bash
+python skills/security-scan/scripts/run.py \
+    --repo-path $SANDBOX \
+    [--scan-types sast,secrets,container]    # default: sast,secrets
+    [--image-name owner/name]                  # required only for container
+```
+
+Available scanners (each used only if its binary is installed):
+
+- **Semgrep** (`--config=auto`) for SAST
+- **Bandit** for Python-specific SAST
+- **gitleaks** for secrets / credentials in git history
+- **trivy** for container image CVEs (only when `container` requested + `--image-name`)
+
+### Step 3 — interpret the JSON
+
 ```json
 {
   "ok": true,
+  "scan_types_run": ["semgrep", "gitleaks"],
   "findings": [
-    {"tool": "semgrep", "rule_id": "...", "file": "src/foo.py", "line": 42,
-     "severity": "high", "message": "Potential SQL injection"},
-    ...
+    {"tool": "semgrep", "rule_id": "python.lang.security.audit.subprocess-shell-true",
+     "file": "src/runner.py", "line": 42,
+     "severity": "high", "message": "..."},
+    {"tool": "gitleaks", "rule_id": "github-pat",
+     "file": ".env.local", "line": 3,
+     "severity": "critical", "message": "secret leak: GitHub Personal Access Token"}
   ],
-  "by_severity": {"critical": 0, "high": 1, "medium": 3, "low": 7, "info": 12},
-  "scan_types_run": ["sast", "secrets"],
+  "by_severity": {"critical": 1, "high": 1},
   "secrets_redacted_in_output": true,
-  "cache_key": "<sha256>"
+  "tokens_redacted_count": 0,
+  "cache_key": "..."
 }
 ```
 
-## Output safety
+Findings are **deduplicated** by `(file, line, rule_id)` keeping the highest severity. Capped at 200 to keep output reasonable.
 
-ALL token-shaped strings in the output are redacted (replaced with
-`<redacted-N>`) before persistence. The redaction event is logged to the
-audit_events table. The whole point of running this skill is to find secrets;
-emitting them downstream would defeat that.
+`secrets_redacted_in_output: true` means all messages have passed token-shape regex redaction (GitHub PAT, AWS key, OpenAI / Anthropic / NIM keys, JWT). `tokens_redacted_count` reports how many were actually replaced (usually 0; spikes indicate something interesting).
+
+If `scan_types_run` is empty, no scanners are installed locally — the JSON includes a `warnings` array explaining this. Tell the user.
+
+### Step 4 — clean up
+
+```bash
+rm -rf /tmp/skill_sandbox/scan-*
+```
+
+## Boundaries
+
+- **Read-only.** Never modifies code.
+- **Own code only.** For third-party CVEs, use `dependency-audit`.
+- **Per-tool timeout 300 s.** Slow repos may hit this on Semgrep.
+- **No platform errors raised** — script always exits 0.
+- **Output is always redacted** even if a finding's message contained a real token.
