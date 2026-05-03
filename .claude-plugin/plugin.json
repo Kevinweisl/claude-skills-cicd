@@ -1,0 +1,13 @@
+{
+  "name": "claude-skills-cicd",
+  "description": "4 reusable Claude Code skills for GitHub CI/CD: lint-and-test (ruff+pytest / npm), build-and-release (wheel/npm/docker, gated), dependency-audit (pip-audit/npm/cargo/govulncheck), security-scan (semgrep+gitleaks+trivy). Read-only by default; build-and-release is human-gated via disable-model-invocation.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Kevin Wei",
+    "email": "weisl@nlg.csie.ntu.edu.tw"
+  },
+  "homepage": "https://github.com/Kevinweisl/claude-skills-cicd",
+  "repository": "https://github.com/Kevinweisl/claude-skills-cicd",
+  "license": "MIT",
+  "keywords": ["ci-cd", "lint", "test", "security", "audit", "github"]
+}

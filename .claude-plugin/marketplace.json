@@ -1,0 +1,17 @@
+{
+  "name": "cicd-skills",
+  "description": "Reusable Claude Code skills for GitHub CI/CD pipelines — built and maintained by Kevin Wei",
+  "owner": {
+    "name": "Kevin Wei",
+    "email": "weisl@nlg.csie.ntu.edu.tw"
+  },
+  "plugins": [
+    {
+      "name": "claude-skills-cicd",
+      "source": "./",
+      "description": "4 CI/CD skills: lint-and-test, build-and-release, dependency-audit, security-scan",
+      "version": "1.0.0",
+      "homepage": "https://github.com/Kevinweisl/claude-skills-cicd"
+    }
+  ]
+}

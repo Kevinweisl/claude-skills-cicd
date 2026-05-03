@@ -8,12 +8,14 @@
 
 | Path | What it is |
 |---|---|
+| `.claude-plugin/plugin.json`     | Plugin manifest — makes this repo a Claude Code plugin (4 skills bundled, namespace `claude-skills-cicd`) |
+| `.claude-plugin/marketplace.json` | Marketplace catalog — makes this repo addable via `/plugin marketplace add` |
 | `skills/lint-and-test/`     | ruff + pytest (Python) / npm lint + npm test (Node) |
 | `skills/build-and-release/` | wheel / npm tarball / docker image (gated, dry-run by default) |
 | `skills/dependency-audit/`  | pip-audit / npm-audit / cargo-audit / govulncheck (CVE scan) |
 | `skills/security-scan/`     | Semgrep + Bandit + gitleaks + (optional) trivy (SAST + secrets) |
 | `skills/_shared/`           | Helpers (subprocess, redact, git-fetch URL guard) |
-| `src/agent_shell/`          | FastAPI backend that exposes the skills to Claude via the Anthropic SDK |
+| `src/agent_shell/`          | FastAPI backend that exposes the skills to Claude via the Anthropic SDK (alternative to native Claude Code install) |
 | `ui/`                       | Vanilla-JS chat UI (sessionStorage API key) |
 | `evals/skill-trigger/`      | Trigger-eval harness — quantifies whether each skill's `description` makes Claude pick it correctly. Last run: TPR=1.0, FPR=0.0 across 7 skills (the 4 here + 3 sibling skills used for disambiguation testing). |
 | `evals/agent-shell-e2e/`    | 8 real-repo end-to-end scenarios (clone → script → JSON parse) |
@@ -28,36 +30,68 @@
   - `dependency-audit` → any of `pip-audit` / `npm` / `cargo audit` / `govulncheck`
   - `security-scan` → any of `semgrep` / `bandit` / `gitleaks` / `trivy`
 
-## Quick start — install in Claude Code
+## Quick start — install in Claude Code (recommended)
 
-The fastest way to try a skill is to symlink it into `~/.claude/skills/` and use Claude Code as you normally would:
+This repo ships as a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces). Install the whole skill bundle with two commands inside any Claude Code session:
+
+```text
+/plugin marketplace add Kevinweisl/claude-skills-cicd
+/plugin install claude-skills-cicd@cicd-skills
+```
+
+Run `/reload-plugins` (or restart the session) and the 4 skills are now available. They are namespaced under the plugin name, so you can invoke them explicitly with:
+
+- `/claude-skills-cicd:lint-and-test`
+- `/claude-skills-cicd:build-and-release`
+- `/claude-skills-cicd:dependency-audit`
+- `/claude-skills-cicd:security-scan`
+
+Or just describe what you want in natural language (`"lint and test https://github.com/psf/black at v24.10.0"`) and Claude will pick the right one based on the skill's `description` frontmatter — that's the trigger eval methodology this repo is graded on.
+
+### Alternative — manual file copy
+
+If you can't use plugins (older Claude Code, or running standalone scripts), copy the skill folders directly:
 
 ```bash
 git clone https://github.com/Kevinweisl/claude-skills-cicd
 cd claude-skills-cicd
 mkdir -p ~/.claude/skills
-for s in lint-and-test build-and-release dependency-audit security-scan; do
-  ln -sfn "$(pwd)/skills/$s" ~/.claude/skills/$s
-done
+cp -r skills/lint-and-test skills/build-and-release skills/dependency-audit skills/security-scan ~/.claude/skills/
 
 # Verify install
-ls -l ~/.claude/skills/   # should show 4 symlinks pointing into this repo
+ls ~/.claude/skills/      # should list the 4 skill folders
 ```
 
-Now in any Claude Code session, prompts like *"lint and test https://github.com/psf/black at v24.10.0"* will trigger the skill, which clones the repo and runs ruff + pytest in a sandbox.
+Skills installed this way are NOT namespaced — they're just `lint-and-test`, `build-and-release`, etc. Trade-off: shorter names, but no version pinning or `/plugin update`.
+
+### Local development — `--plugin-dir`
+
+If you're hacking on the skills themselves, load the working copy directly without installing:
+
+```bash
+git clone https://github.com/Kevinweisl/claude-skills-cicd
+cd claude-skills-cicd
+claude --plugin-dir .
+```
+
+Run `/reload-plugins` after each edit.
 
 ## Smoke test — does it work?
 
-Open a fresh Claude Code session and paste each prompt below. These are the same 4 scenarios used in `evals/agent-shell-e2e/scenario-*.json`, so you know exactly what to expect:
+Open a fresh Claude Code session and paste each prompt below. These are the same 4 scenarios saved in `evals/agent-shell-e2e/scenario-*.json`, so you know exactly what to expect:
 
 | # | Paste this prompt | What you should see | What it proves |
 |---|---|---|---|
 | 1 | `lint and test https://github.com/octocat/Hello-World at master` | Triggers `lint-and-test`. Returns `ok=false, language=unknown, error="unsupported language: unknown (no pyproject.toml or package.json found)"` | Clone + URL guard + graceful failure on unrecognised repos |
-| 2 | `audit deps of https://github.com/psf/requests at main` | Triggers `dependency-audit`. Returns `ok=true, ecosystems_detected=["python"]` plus a `findings_by_ecosystem.python.vulnerabilities` list (count varies with current advisories) | Multi-ecosystem auto-detect; OSV/GHSA lookup |
+| 2 | `audit deps of https://github.com/psf/requests at main` | Triggers `dependency-audit`. Returns `ok=true, ecosystems_detected=["python"]` plus a `findings_by_ecosystem.python.vulnerabilities` list (count varies with current advisories; if `pip-audit` isn't on `PATH`, you'll see `error: "binary not installed"` and an empty list — graceful degradation by design) | Multi-ecosystem auto-detect; OSV/GHSA lookup; honest reporting when scanners are missing |
 | 3 | `scan https://github.com/psf/requests for SAST and secrets` | Triggers `security-scan`. Returns `ok=true, scan_types_run=["semgrep","gitleaks"], secrets_redacted_in_output=true` plus a `findings` array | Parallel scanners + token-shape redaction (any leaked credential is replaced by `<redacted-N>` before reaching Claude) |
-| 4 | `build a wheel for https://github.com/octocat/Hello-World, version 0.1.0` | **Claude should pause and ask for explicit confirmation** ("This will publish to a registry — are you sure?") instead of running. Only after you say yes does the skill fire (and even then, it dry-runs by default). | The marquee design choice: `build-and-release` is a side-effecting write, so `disable-model-invocation: true` blocks auto-trigger. If Claude fires it without asking, the safety boundary is broken. |
+| 4 | `build a wheel for https://github.com/octocat/Hello-World, version 0.1.0` | **Claude should NOT fire the skill.** `build-and-release` ships with `disable-model-invocation: true`, so Claude either declines, asks for explicit confirmation, or tells you to invoke it manually with `/claude-skills-cicd:build-and-release`. | The marquee design choice: a side-effecting write skill is human-gated. If Claude fires it without asking, the safety boundary is broken. |
 
-Try the same prompt twice in a row — the second call returns `_cache_hit: true` from the in-memory idempotency cache (5-minute TTL), skipping the clone + subprocess entirely. `build-and-release` with `--no-dry-run` is exempt because re-pushing on demand is sometimes the user's actual intent.
+A few things to notice across the 4 prompts:
+
+- **Idempotency cache**: try the same prompt twice in a row — the second call returns `_cache_hit: true` from the in-memory idempotency cache (5-minute TTL), skipping the clone + subprocess entirely. `build-and-release` with `--no-dry-run` is exempt because re-pushing on demand is sometimes the user's actual intent.
+- **Description-based routing**: the 4 prompts are natural language, never slash commands. Claude picks the right skill from each `SKILL.md`'s `description` frontmatter, which is what the [trigger eval](#evaluation) measures (TPR=1.0 / FPR=0.0 across 7 sibling skills).
+- **Explicit invocation also works**: if you want to bypass description routing, the namespaced slash forms `/claude-skills-cicd:<skill>` invoke a specific skill directly.
 
 ## Quick start — run the web demo
 
