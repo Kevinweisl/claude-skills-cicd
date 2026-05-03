@@ -8,14 +8,20 @@ shell scripts that do the actual work. Responsibilities:
   - Translate the JSON tool-use input into the script's CLI args.
   - Run the script in a subprocess and parse its stdout JSON.
   - Always clean up the sandbox.
+  - Idempotency cache (process-local, TTL): identical (skill, input) calls
+    within the TTL window short-circuit and return the prior result without
+    re-cloning or re-running. Skipped for build-and-release with no_dry_run
+    (a side-effecting write the caller may legitimately want to retry).
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills"))
@@ -24,6 +30,45 @@ from _shared.subprocess_helper import run_subprocess  # noqa: E402
 
 
 SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
+
+# Process-local idempotency cache. (skill, input args) → (timestamp, result).
+# 5-minute TTL: long enough that a chat-loop retry hits the cache, short
+# enough that real repo state changes (a new push) eventually re-execute.
+_RESULT_CACHE: dict[str, tuple[float, dict]] = {}
+_CACHE_TTL_S = 300.0
+
+
+def _cache_key(name: str, input_args: dict) -> str:
+    payload = json.dumps({"skill": name, "args": input_args}, sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
+
+
+def _is_cacheable(name: str, input_args: dict) -> bool:
+    """build-and-release with no_dry_run is a side-effecting write — never cache.
+    Even though registries reject duplicate digests, the user explicitly asking
+    again may indicate they rotated credentials or hit a transient registry
+    error, so re-execute rather than mask with stale cache."""
+    return not (name == "build-and-release" and input_args.get("no_dry_run"))
+
+
+def _cache_lookup(key: str, *, now: float | None = None) -> dict | None:
+    entry = _RESULT_CACHE.get(key)
+    if entry is None:
+        return None
+    ts, result = entry
+    if (now or time.time()) - ts > _CACHE_TTL_S:
+        _RESULT_CACHE.pop(key, None)
+        return None
+    return {**result, "_cache_hit": True}
+
+
+def _cache_store(key: str, result: dict) -> None:
+    _RESULT_CACHE[key] = (time.time(), result)
+
+
+def cache_clear() -> None:
+    """Test hook — wipe the in-memory cache."""
+    _RESULT_CACHE.clear()
 
 
 def _build_cli_args(name: str, input_args: dict, repo_path: Path) -> list[str]:
@@ -59,10 +104,19 @@ def run_skill(name: str, input_args: dict) -> dict:
 
     Returns the parsed JSON result dict. On failure, returns
     {ok: false, error: ...} so the SDK gets a structured response.
+    Identical (skill, input) calls within `_CACHE_TTL_S` short-circuit via
+    the in-memory cache and return the previous result with `_cache_hit=True`,
+    skipping the clone + subprocess entirely.
     """
     script = SKILLS_DIR / name / "scripts" / "run.py"
     if not script.exists():
         return {"ok": False, "error": f"skill {name!r} has no scripts/run.py"}
+
+    cache_key = _cache_key(name, input_args) if _is_cacheable(name, input_args) else None
+    if cache_key is not None:
+        cached = _cache_lookup(cache_key)
+        if cached is not None:
+            return cached
 
     repo_arg = input_args.get("repo", "")
     sandbox: Path | None = None
@@ -108,13 +162,18 @@ def run_skill(name: str, input_args: dict) -> dict:
             }
 
         try:
-            return json.loads(r["stdout"])
+            result = json.loads(r["stdout"])
         except json.JSONDecodeError:
             return {
                 "ok": False,
                 "error": "script did not emit JSON",
                 "stdout_tail": r["stdout"][-500:],
             }
+        # Only cache successful runs. Failures (network blip, missing binary)
+        # may be transient and should not freeze a wrong answer for 5 minutes.
+        if cache_key is not None and result.get("ok"):
+            _cache_store(cache_key, result)
+        return result
     finally:
         if sandbox and sandbox.exists():
             shutil.rmtree(sandbox, ignore_errors=True)
