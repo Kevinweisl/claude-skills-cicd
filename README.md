@@ -18,6 +18,16 @@
 | `evals/skill-trigger/`      | Trigger-eval harness — quantifies whether each skill's `description` makes Claude pick it correctly. Last run: TPR=1.0, FPR=0.0 across 7 skills (the 4 here + 3 sibling skills used for disambiguation testing). |
 | `evals/agent-shell-e2e/`    | 8 real-repo end-to-end scenarios (clone → script → JSON parse) |
 
+## Prerequisites
+
+- Python 3.12+
+- `git` on `PATH` (the skills shallow-clone target repos)
+- The actual scanner binaries are **all optional** — each skill detects them at runtime and reports `error: "binary not installed"` instead of crashing. So you only need what you actually want to use:
+  - `lint-and-test` → `ruff` + `pytest` (Python repos), or `npm` (Node repos)
+  - `build-and-release` → `python -m build` (wheels), `npm pack` (npm), `docker` (images)
+  - `dependency-audit` → any of `pip-audit` / `npm` / `cargo audit` / `govulncheck`
+  - `security-scan` → any of `semgrep` / `bandit` / `gitleaks` / `trivy`
+
 ## Quick start — install in Claude Code
 
 The fastest way to try a skill is to symlink it into `~/.claude/skills/` and use Claude Code as you normally would:
@@ -29,9 +39,25 @@ mkdir -p ~/.claude/skills
 for s in lint-and-test build-and-release dependency-audit security-scan; do
   ln -sfn "$(pwd)/skills/$s" ~/.claude/skills/$s
 done
+
+# Verify install
+ls -l ~/.claude/skills/   # should show 4 symlinks pointing into this repo
 ```
 
 Now in any Claude Code session, prompts like *"lint and test https://github.com/psf/black at v24.10.0"* will trigger the skill, which clones the repo and runs ruff + pytest in a sandbox.
+
+## Smoke test — does it work?
+
+Open a fresh Claude Code session and paste each prompt below. These are the same 4 scenarios used in `evals/agent-shell-e2e/scenario-*.json`, so you know exactly what to expect:
+
+| # | Paste this prompt | What you should see | What it proves |
+|---|---|---|---|
+| 1 | `lint and test https://github.com/octocat/Hello-World at master` | Triggers `lint-and-test`. Returns `ok=false, language=unknown, error="unsupported language: unknown (no pyproject.toml or package.json found)"` | Clone + URL guard + graceful failure on unrecognised repos |
+| 2 | `audit deps of https://github.com/psf/requests at main` | Triggers `dependency-audit`. Returns `ok=true, ecosystems_detected=["python"]` plus a `findings_by_ecosystem.python.vulnerabilities` list (count varies with current advisories) | Multi-ecosystem auto-detect; OSV/GHSA lookup |
+| 3 | `scan https://github.com/psf/requests for SAST and secrets` | Triggers `security-scan`. Returns `ok=true, scan_types_run=["semgrep","gitleaks"], secrets_redacted_in_output=true` plus a `findings` array | Parallel scanners + token-shape redaction (any leaked credential is replaced by `<redacted-N>` before reaching Claude) |
+| 4 | `build a wheel for https://github.com/octocat/Hello-World, version 0.1.0` | **Claude should pause and ask for explicit confirmation** ("This will publish to a registry — are you sure?") instead of running. Only after you say yes does the skill fire (and even then, it dry-runs by default). | The marquee design choice: `build-and-release` is a side-effecting write, so `disable-model-invocation: true` blocks auto-trigger. If Claude fires it without asking, the safety boundary is broken. |
+
+Try the same prompt twice in a row — the second call returns `_cache_hit: true` from the in-memory idempotency cache (5-minute TTL), skipping the clone + subprocess entirely. `build-and-release` with `--no-dry-run` is exempt because re-pushing on demand is sometimes the user's actual intent.
 
 ## Quick start — run the web demo
 
@@ -81,6 +107,8 @@ Three boundaries:
 - **`tool_runner` is the security boundary** — only `https://github.com/` URLs accepted; sandbox confined to `/tmp/skill_sandbox_*`; cleanup guaranteed.
 - **`scripts/run.py` is deterministic** — one JSON object on stdout, never raises on tool failure (only on missing `--repo-path`).
 
+`tool_runner` also holds a **process-local idempotency cache** (5-minute TTL): identical `(skill, input)` calls served from memory without re-cloning. Side-effecting `build-and-release` invocations with `--no-dry-run` are exempt because re-pushing may be the user's actual intent.
+
 ## Skill design notes
 
 Each of the four skills demonstrates a deliberately different pattern:
@@ -94,13 +122,31 @@ Each of the four skills demonstrates a deliberately different pattern:
 
 ## Evaluation
 
-`evals/skill-trigger/` contains the trigger-eval harness. The 7-skill scope (4 here + 3 sibling skills from the original mono-repo) intentionally tests **disambiguation** — does Claude correctly pick `dependency-audit` for "scan my deps for CVEs" vs. `security-scan` for "find SQL injection in our handlers"? The two are semantically adjacent but require different scanners.
+Three layers, deliberately stacked from cheap-and-deterministic to expensive-and-realistic:
 
-Last run: **TPR=1.0, FPR=0.0** on all 7 skills after 5 rounds of description tuning. See `evals/skill-trigger/last_run.json`.
+### 1. Per-skill trigger eval (NIM K=3 vote, 140 queries)
 
-`evals/agent-shell-e2e/` contains 8 deterministic real-repo scenarios that cover the happy paths plus URL guard, nonexistent repo, idempotent re-runs, and unsupported language. All 8 behave per spec; see `scenario-*.json`.
+`evals/skill-trigger/` quantifies whether each skill's `description` makes Claude pick it correctly. The 7-skill scope (4 here + 3 sibling skills from the original mono-repo) intentionally tests **disambiguation** — does Claude correctly pick `dependency-audit` for "scan my deps for CVEs" vs. `security-scan` for "find SQL injection in our handlers"? The two are semantically adjacent but require different scanners.
 
-The remaining piece — Claude actually picking the right skill from natural-language prompts in the UI — needs an Anthropic API key, so it's documented as a manual checklist in `evals/agent-shell-e2e/manual-checklist.md`.
+**Last run: TPR=1.0, FPR=0.0** on all 7 skills after 5 rounds of description tuning. See `evals/skill-trigger/last_run.json`.
+
+### 2. Cross-domain ambiguity (NIM K=3 vote, 10 queries)
+
+The trigger eval above scores per-skill clarity. The ambiguity layer scores **decomposition**: when a prompt genuinely spans 2+ skills (`"lint, test, then audit our deps"`), does Claude pick *one* defensible first call?
+
+**Last run: 10/10 strict majority pass, 10/10 lenient (any-voter) pass.** See `evals/skill-trigger/last_ambiguity_run.json` and `cost_report_ambiguity.md`.
+
+### 3. End-to-end on real repos (no LLM, deterministic)
+
+`evals/agent-shell-e2e/` contains 8 real-repo scenarios that cover happy paths plus URL guard, nonexistent repo, idempotent re-runs, and unsupported language. All 8 behave per spec; see `scenario-*.json`.
+
+### Cost / latency
+
+Aggregated by `evals/skill-trigger/analyze_last_run.py` from saved runs (no live LLM calls). The 140-query eval consumed an estimated ~378K tokens (~$0.17 USD) at 99.3% K-voter unanimity; the 10-query ambiguity batch cost ~$0.017 USD. See `cost_report_140q.md` / `cost_report_ambiguity.md`.
+
+### What's left as manual
+
+The one piece that **can't be automated** is Claude actually picking the right skill from natural-language prompts in the UI — that needs an Anthropic API key (which by design lives only in the evaluator's browser sessionStorage, never on the server). The 8-prompt checklist is in `evals/agent-shell-e2e/manual-checklist.md`.
 
 ## AI collaboration notes
 
