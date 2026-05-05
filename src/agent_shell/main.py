@@ -35,7 +35,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_DIR = REPO_ROOT / "skills"
 UI_DIR = REPO_ROOT / "ui"
 
-DEFAULT_MODEL = "claude-opus-4-5-20250109"  # fallback if SDK rejects newer alias
+DEFAULT_MODEL = "claude-opus-4-7"  # strongest tool-routing + JSON summarisation in the lineup
 
 app = FastAPI(title="Claude Skills CI/CD — Agent Shell")
 
