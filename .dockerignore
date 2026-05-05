@@ -1,0 +1,29 @@
+# Keep image small + reproducible. None of these belong in the runtime container.
+.git
+.github
+.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+dist
+build
+*.egg-info
+
+# Local-only docs / planning material
+docs
+prompts
+tasks
+tests
+scripts
+
+# Skill-runtime sandboxes (created at runtime, never copy from host)
+/tmp/skill_sandbox_*
+
+# IDE / OS noise
+.vscode
+.idea
+.DS_Store
