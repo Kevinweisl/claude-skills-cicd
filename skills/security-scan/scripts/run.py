@@ -10,9 +10,14 @@ severity, and all messages pass through token-shape redaction so secret
 material can't leak through skill output.
 
 Usage:
-    python skills/security-scan/scripts/run.py \\
-        --repo-path PATH [--scan-types sast,secrets,container] \\
-        [--image-name OWNER/NAME]
+    python skills/security-scan/scripts/run.py [--repo-path PATH] \\
+        [--scan-types sast,secrets,container] [--image-name OWNER/NAME]
+    python skills/security-scan/scripts/run.py --repo-url URL [--ref REF] ...
+
+Repo resolution:
+    --repo-path PATH    local git checkout (default: $PWD)
+    --repo-url URL      shallow-clone this GitHub URL (overrides --repo-path)
+    --ref REF           branch/tag/sha when --repo-url is given (default: main)
 
 Output: single JSON object on stdout.
 """
@@ -22,12 +27,14 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from _shared.redact import redact_tokens  # noqa: E402
+from _shared.repo_resolver import resolve_repo  # noqa: E402
 from _shared.subprocess_helper import hash_inputs  # noqa: E402
 
 
@@ -173,7 +180,12 @@ def _dedup(findings: list[dict]) -> list[dict]:
 
 async def main_async() -> int:
     ap = argparse.ArgumentParser(description="security-scan skill")
-    ap.add_argument("--repo-path", required=True)
+    ap.add_argument("--repo-path", default=os.getcwd(),
+                    help="local git checkout (default: current directory)")
+    ap.add_argument("--repo-url", default="",
+                    help="GitHub URL to shallow-clone (overrides --repo-path)")
+    ap.add_argument("--ref", default="main",
+                    help="branch/tag/sha when --repo-url is given")
     ap.add_argument(
         "--scan-types", default="sast,secrets",
         help="comma-separated subset of sast,secrets,container",
@@ -181,49 +193,48 @@ async def main_async() -> int:
     ap.add_argument("--image-name", default="")
     args = ap.parse_args()
 
-    repo = Path(args.repo_path).resolve()
-    if not repo.exists():
-        print(json.dumps({"ok": False, "error": f"repo not found: {repo}"}))
-        return 1
+    repo, cleanup = resolve_repo(args.repo_path, args.repo_url, args.ref)
+    try:
+        scan_types = {s.strip() for s in args.scan_types.split(",") if s.strip()}
+        findings, tools_run = await _run_scanners(repo, scan_types, args.image_name)
 
-    scan_types = {s.strip() for s in args.scan_types.split(",") if s.strip()}
-    findings, tools_run = await _run_scanners(repo, scan_types, args.image_name)
+        if not tools_run:
+            warning = (
+                "no scan tools available; install semgrep / gitleaks / "
+                "bandit / trivy (or scan_types omits all available tools)"
+            )
+            print(json.dumps({
+                "ok": True, "findings": [], "by_severity": {},
+                "scan_types_run": [], "secrets_redacted_in_output": True,
+                "tokens_redacted_count": 0,
+                "warnings": [warning],
+                "cache_key": hash_inputs([*sorted(scan_types)]),
+            }, indent=2))
+            return 0
 
-    if not tools_run:
-        warning = (
-            "no scan tools available — install semgrep / gitleaks / "
-            "bandit / trivy (or scan_types omits all available tools)"
-        )
-        print(json.dumps({
-            "ok": True, "findings": [], "by_severity": {},
-            "scan_types_run": [], "secrets_redacted_in_output": True,
-            "tokens_redacted_count": 0,
-            "warnings": [warning],
+        deduped = _dedup(findings)
+        redactions = 0
+        by_severity: dict[str, int] = {}
+        for f in deduped:
+            msg, n = redact_tokens(f.get("message", ""))
+            f["message"] = msg
+            redactions += n
+            sev = f["severity"]
+            by_severity[sev] = by_severity.get(sev, 0) + 1
+
+        output = {
+            "ok": True,
+            "findings": deduped[:200],
+            "by_severity": by_severity,
+            "scan_types_run": tools_run,
+            "secrets_redacted_in_output": True,
+            "tokens_redacted_count": redactions,
             "cache_key": hash_inputs([*sorted(scan_types)]),
-        }, indent=2))
+        }
+        print(json.dumps(output, indent=2))
         return 0
-
-    deduped = _dedup(findings)
-    redactions = 0
-    by_severity: dict[str, int] = {}
-    for f in deduped:
-        msg, n = redact_tokens(f.get("message", ""))
-        f["message"] = msg
-        redactions += n
-        sev = f["severity"]
-        by_severity[sev] = by_severity.get(sev, 0) + 1
-
-    output = {
-        "ok": True,
-        "findings": deduped[:200],
-        "by_severity": by_severity,
-        "scan_types_run": tools_run,
-        "secrets_redacted_in_output": True,
-        "tokens_redacted_count": redactions,
-        "cache_key": hash_inputs([*sorted(scan_types)]),
-    }
-    print(json.dumps(output, indent=2))
-    return 0
+    finally:
+        cleanup()
 
 
 def main() -> int:

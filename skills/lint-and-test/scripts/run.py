@@ -2,16 +2,21 @@
 """lint-and-test skill — execute ruff + pytest (Python) or npm lint+test (Node).
 
 Usage (called by Claude via Bash, or directly):
-    python skills/lint-and-test/scripts/run.py --repo-path PATH [options]
+    python skills/lint-and-test/scripts/run.py [--repo-path PATH] [options]
+    python skills/lint-and-test/scripts/run.py --repo-url URL [--ref REF]
 
-Options:
-    --repo-path PATH    absolute path to checked-out repo (required)
+Repo resolution:
+    --repo-path PATH    local path to a git checkout (default: $PWD)
+    --repo-url URL      shallow-clone this GitHub URL instead (overrides --repo-path)
+    --ref REF           branch/tag/sha when --repo-url is used (default: main)
+
+Other options:
     --commit-sha SHA    used for cache key only (optional)
     --language LANG     auto | python | node (default: auto)
 
 Output: single JSON object on stdout. Never raises on tool-level failure;
 always exits 0 with `ok=false` if work was done but the tool reported an
-issue. Non-zero exit only on platform errors (missing repo path, etc).
+issue.
 """
 
 from __future__ import annotations
@@ -19,11 +24,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from _shared.repo_resolver import resolve_repo  # noqa: E402
 from _shared.subprocess_helper import hash_inputs, run_subprocess  # noqa: E402
 
 
@@ -94,45 +101,49 @@ def run_node(repo: Path) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="lint-and-test skill")
-    ap.add_argument("--repo-path", required=True)
+    ap.add_argument("--repo-path", default=os.getcwd(),
+                    help="local git checkout (default: current directory)")
+    ap.add_argument("--repo-url", default="",
+                    help="GitHub URL to shallow-clone (overrides --repo-path)")
+    ap.add_argument("--ref", default="main",
+                    help="branch/tag/sha when --repo-url is given")
     ap.add_argument("--commit-sha", default="")
     ap.add_argument(
         "--language", default="auto", choices=["auto", "python", "node"],
     )
     args = ap.parse_args()
 
-    repo = Path(args.repo_path).resolve()
-    if not repo.exists():
-        print(json.dumps({"ok": False, "error": f"repo path not found: {repo}"}))
-        return 1
+    repo, cleanup = resolve_repo(args.repo_path, args.repo_url, args.ref)
+    try:
+        language = args.language
+        if language == "auto":
+            language = detect_language(repo)
 
-    language = args.language
-    if language == "auto":
-        language = detect_language(repo)
+        lockfile_h = ""
+        for f in ("pyproject.toml", "uv.lock", "package-lock.json", "yarn.lock"):
+            p = repo / f
+            if p.exists():
+                lockfile_h += hashlib.sha256(p.read_bytes()).hexdigest()[:16]
+        # cache_key is content-based on purpose: same lockfile + same ref + same
+        # language => same key, regardless of where the repo is checked out.
+        cache_key = hash_inputs([args.commit_sha, language, lockfile_h])
 
-    lockfile_h = ""
-    for f in ("pyproject.toml", "uv.lock", "package-lock.json", "yarn.lock"):
-        p = repo / f
-        if p.exists():
-            lockfile_h += hashlib.sha256(p.read_bytes()).hexdigest()[:16]
-    # cache_key is content-based on purpose — same lockfile + same ref + same
-    # language → same key, regardless of where the repo is checked out.
-    cache_key = hash_inputs([args.commit_sha, language, lockfile_h])
+        if language == "python":
+            result = run_python(repo)
+        elif language == "node":
+            result = run_node(repo)
+        else:
+            result = {
+                "ok": False,
+                "error": f"unsupported language: {language} (no pyproject.toml or package.json found)",
+                "language": language,
+            }
 
-    if language == "python":
-        result = run_python(repo)
-    elif language == "node":
-        result = run_node(repo)
-    else:
-        result = {
-            "ok": False,
-            "error": f"unsupported language: {language} (no pyproject.toml or package.json found)",
-            "language": language,
-        }
-
-    result["cache_key"] = cache_key
-    print(json.dumps(result, indent=2))
-    return 0
+        result["cache_key"] = cache_key
+        print(json.dumps(result, indent=2))
+        return 0
+    finally:
+        cleanup()
 
 
 if __name__ == "__main__":

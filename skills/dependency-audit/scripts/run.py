@@ -6,8 +6,16 @@ fans out to the appropriate auditor (pip-audit, npm audit, cargo audit,
 govulncheck). Output normalized into a uniform vulnerability list.
 
 Usage:
-    python skills/dependency-audit/scripts/run.py \\
-        --repo-path PATH [--ecosystems python,node,...]
+    python skills/dependency-audit/scripts/run.py [--repo-path PATH] [options]
+    python skills/dependency-audit/scripts/run.py --repo-url URL [--ref REF]
+
+Repo resolution:
+    --repo-path PATH    local git checkout (default: $PWD)
+    --repo-url URL      shallow-clone this GitHub URL (overrides --repo-path)
+    --ref REF           branch/tag/sha when --repo-url is given (default: main)
+
+Other options:
+    --ecosystems LIST   comma-separated subset of python,node,rust,go (default: auto)
 
 Output: single JSON object on stdout.
 """
@@ -16,11 +24,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from _shared.repo_resolver import resolve_repo  # noqa: E402
 from _shared.subprocess_helper import hash_inputs, run_subprocess  # noqa: E402
 
 import hashlib
@@ -152,47 +162,51 @@ _AUDITORS = {
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="dependency-audit skill")
-    ap.add_argument("--repo-path", required=True)
+    ap.add_argument("--repo-path", default=os.getcwd(),
+                    help="local git checkout (default: current directory)")
+    ap.add_argument("--repo-url", default="",
+                    help="GitHub URL to shallow-clone (overrides --repo-path)")
+    ap.add_argument("--ref", default="main",
+                    help="branch/tag/sha when --repo-url is given")
     ap.add_argument(
         "--ecosystems", default="",
         help="comma-separated subset of python,node,rust,go (default: auto)",
     )
     args = ap.parse_args()
 
-    repo = Path(args.repo_path).resolve()
-    if not repo.exists():
-        print(json.dumps({"ok": False, "error": f"repo not found: {repo}"}))
-        return 1
+    repo, cleanup = resolve_repo(args.repo_path, args.repo_url, args.ref)
+    try:
+        detected = _detect_ecosystems(repo)
+        if args.ecosystems:
+            requested = {e.strip() for e in args.ecosystems.split(",") if e.strip()}
+            detected = [e for e in detected if e in requested]
 
-    detected = _detect_ecosystems(repo)
-    if args.ecosystems:
-        requested = {e.strip() for e in args.ecosystems.split(",") if e.strip()}
-        detected = [e for e in detected if e in requested]
+        findings_by_ecosystem: dict[str, dict] = {}
+        summary = {"critical": 0, "high": 0, "medium": 0, "low": 0, "total": 0}
 
-    findings_by_ecosystem: dict[str, dict] = {}
-    summary = {"critical": 0, "high": 0, "medium": 0, "low": 0, "total": 0}
+        for eco in detected:
+            result = _AUDITORS[eco](repo)
+            findings_by_ecosystem[eco] = result
+            for v in result.get("vulnerabilities", []):
+                summary["total"] += 1
+                sev = (v.get("severity") or "unknown").lower()
+                if sev == "moderate":
+                    sev = "medium"
+                if sev in summary:
+                    summary[sev] += 1
 
-    for eco in detected:
-        result = _AUDITORS[eco](repo)
-        findings_by_ecosystem[eco] = result
-        for v in result.get("vulnerabilities", []):
-            summary["total"] += 1
-            sev = (v.get("severity") or "unknown").lower()
-            if sev == "moderate":
-                sev = "medium"
-            if sev in summary:
-                summary[sev] += 1
-
-    output = {
-        "ok": True,
-        "findings_by_ecosystem": findings_by_ecosystem,
-        "summary": summary,
-        "ecosystems_detected": detected,
-        # cache_key is content-based: ecosystem set + manifest hashes.
-        "cache_key": hash_inputs([*sorted(detected), _manifest_hash(repo)]),
-    }
-    print(json.dumps(output, indent=2))
-    return 0
+        output = {
+            "ok": True,
+            "findings_by_ecosystem": findings_by_ecosystem,
+            "summary": summary,
+            "ecosystems_detected": detected,
+            # cache_key is content-based: ecosystem set + manifest hashes.
+            "cache_key": hash_inputs([*sorted(detected), _manifest_hash(repo)]),
+        }
+        print(json.dumps(output, indent=2))
+        return 0
+    finally:
+        cleanup()
 
 
 if __name__ == "__main__":

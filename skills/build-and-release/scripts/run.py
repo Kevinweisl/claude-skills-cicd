@@ -6,9 +6,16 @@ the build succeeded. Idempotent by content digest (re-pushing the same
 artifact is a no-op at the registry level).
 
 Usage:
-    python skills/build-and-release/scripts/run.py \\
-        --repo-path PATH --target wheel|npm|docker --version SEMVER \\
+    python skills/build-and-release/scripts/run.py [--repo-path PATH] \\
+        --target wheel|npm|docker --version SEMVER \\
         [--image-name OWNER/NAME] [--no-dry-run]
+    python skills/build-and-release/scripts/run.py --repo-url URL [--ref REF] \\
+        --target wheel ...
+
+Repo resolution:
+    --repo-path PATH    local git checkout (default: $PWD)
+    --repo-url URL      shallow-clone this GitHub URL (overrides --repo-path)
+    --ref REF           branch/tag/sha when --repo-url is given (default: main)
 
 Output: single JSON object on stdout.
 """
@@ -18,10 +25,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from _shared.repo_resolver import resolve_repo  # noqa: E402
 from _shared.subprocess_helper import run_subprocess  # noqa: E402
 
 
@@ -129,7 +138,12 @@ def _build_docker(repo: Path, version: str, image_name: str, dry_run: bool) -> d
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="build-and-release skill")
-    ap.add_argument("--repo-path", required=True)
+    ap.add_argument("--repo-path", default=os.getcwd(),
+                    help="local git checkout (default: current directory)")
+    ap.add_argument("--repo-url", default="",
+                    help="GitHub URL to shallow-clone (overrides --repo-path)")
+    ap.add_argument("--ref", default="main",
+                    help="branch/tag/sha when --repo-url is given")
     ap.add_argument("--target", default="", help="wheel|npm|docker")
     ap.add_argument("--version", default="")
     ap.add_argument("--image-name", default="")
@@ -139,10 +153,6 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    repo = Path(args.repo_path).resolve()
-    if not repo.exists():
-        print(json.dumps({"ok": False, "error": f"repo not found: {repo}"}))
-        return 1
     if args.target not in {"wheel", "npm", "docker"}:
         print(json.dumps({
             "ok": False,
@@ -155,19 +165,24 @@ def main() -> int:
             "error": "version is required (semver)",
         }))
         return 0
-    dry_run = not args.no_dry_run
 
-    if args.target == "wheel":
-        result = _build_wheel(repo, args.version, dry_run)
-    elif args.target == "npm":
-        result = _build_npm(repo, dry_run)
-    else:
-        result = _build_docker(repo, args.version, args.image_name, dry_run)
+    repo, cleanup = resolve_repo(args.repo_path, args.repo_url, args.ref)
+    try:
+        dry_run = not args.no_dry_run
 
-    result.setdefault("version", args.version)
-    result.setdefault("dry_run", dry_run)
-    print(json.dumps(result, indent=2))
-    return 0
+        if args.target == "wheel":
+            result = _build_wheel(repo, args.version, dry_run)
+        elif args.target == "npm":
+            result = _build_npm(repo, dry_run)
+        else:
+            result = _build_docker(repo, args.version, args.image_name, dry_run)
+
+        result.setdefault("version", args.version)
+        result.setdefault("dry_run", dry_run)
+        print(json.dumps(result, indent=2))
+        return 0
+    finally:
+        cleanup()
 
 
 if __name__ == "__main__":
