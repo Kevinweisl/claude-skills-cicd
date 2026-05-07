@@ -1,90 +1,65 @@
 ---
 name: dependency-audit
-description: Scan a repository's dependency manifests (pyproject.toml/requirements.txt, package.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES in third-party libraries using OSV/GHSA advisory databases. Use this when the user asks to "audit dependencies", "run pip-audit", "npm audit", "check for vulnerable packages", "are any of my deps CVE-flagged", "is lodash safe", "any CVEs in our packages", "scan our requirements.txt", "check our Cargo.lock for advisories", or "any GHSA hits in our manifest". For SAST or secret scans on YOUR OWN source code, use security-scan. For lint/test, use lint-and-test. For build/publish, use build-and-release. Read-only.
-allowed-tools: Bash(git clone:*), Bash(python:*), Bash(./skills/dependency-audit/scripts/run.py:*), Bash(rm -rf /tmp/skill_sandbox*)
+description: Scan the user's CURRENT repository (or a remote GitHub URL) for KNOWN VULNERABILITIES in third-party dependencies using OSV/GHSA advisory databases. Detects ecosystem from manifest files (pyproject.toml/requirements.txt, package.json/package-lock.json, Cargo.toml, go.mod) and runs the matching auditor (pip-audit, npm audit, cargo audit, govulncheck). Default behaviour reads `$PWD` (no clone). Use this when the user asks to "audit dependencies", "run pip-audit", "npm audit", "check for vulnerable packages", "are any of my deps CVE-flagged", "is lodash safe", "any CVEs in our packages", "scan our requirements.txt", "check our Cargo.lock for advisories", or "any GHSA hits in our manifest". For SAST or secret scans on YOUR OWN source code, use security-scan. For lint/test, use lint-and-test. For build/publish, use build-and-release. Read-only.
+allowed-tools: Bash(python:*), Bash(./skills/dependency-audit/scripts/run.py:*)
 ---
 
 # dependency-audit
 
-Scan dependency manifests across multiple ecosystems and report known CVEs from OSV/GHSA advisory databases. **Read-only**.
+Look up known CVEs in the project's third-party dependencies. **Read-only**: never modifies manifests, never pushes to a registry.
 
 ## When to use
 
-Trigger when the user asks about CVEs / advisories / vulnerabilities in **third-party libraries** (not their own code):
+- "audit my deps for CVEs" / "any vulnerabilities in our packages" → run on the user's current repo
+- "audit deps of https://github.com/psf/requests" → shallow-clone the remote URL
 
-- "audit deps of psf/requests"
-- "any CVEs in our package-lock.json"
-- "check if lodash is safe"
-- "run pip-audit on this repo"
+**Don't use for**: vulnerabilities in the project's OWN code (SAST) → that's `security-scan`. Lint/test → `lint-and-test`. Build/release → `build-and-release`.
 
-**Don't use for**: SAST / secrets / SQL injection / hardcoded passwords in **the user's own code** → use `security-scan`. Lint/test → `lint-and-test`. Build/publish → `build-and-release`.
+## How to invoke
 
-## How to use
-
-### Step 1 — get the repo onto disk
-
-If a `https://github.com/...` URL was given, clone shallowly:
+### Default: current repository (no clone)
 
 ```bash
-SANDBOX=/tmp/skill_sandbox/audit-$$
-git clone --depth=1 --branch <REF> <REPO_URL> $SANDBOX
+python skills/dependency-audit/scripts/run.py
 ```
 
-If a local path was given, use it directly.
+The script reads `$PWD`, validates `.git/`, walks the manifest files, and fans out to per-ecosystem auditors.
 
-### Step 2 — run the script
+Optional flags:
+
+- `--ecosystems python,node,rust,go` (default: auto-detect from manifest files)
+
+### Remote: shallow-clone a GitHub URL
 
 ```bash
 python skills/dependency-audit/scripts/run.py \
-    --repo-path $SANDBOX \
-    [--ecosystems python,node,rust,go]   # optional; default detects all
+    --repo-url https://github.com/psf/requests --ref main
 ```
 
-The script auto-detects ecosystems from manifest files (`pyproject.toml`, `package-lock.json`, `Cargo.lock`, `go.sum`) and runs the appropriate auditor:
-
-- **python** → `pip-audit`
-- **node** → `npm audit`
-- **rust** → `cargo audit`
-- **go** → `govulncheck`
-
-Skipped silently if the auditor binary isn't installed (recorded in output).
-
-### Step 3 — interpret the JSON
+## Interpret the JSON output
 
 ```json
 {
   "ok": true,
-  "ecosystems_detected": ["python", "node"],
+  "ecosystems_detected": ["python"],
   "findings_by_ecosystem": {
     "python": {
       "tool": "pip-audit",
       "vulnerabilities": [
-        {"package": "requests", "id": "GHSA-xxxx", "severity": "high",
-         "fix_versions": ["2.32.0"]}
+        {"package": "requests", "id": "GHSA-...", "severity": "high", "fix_versions": ["2.32.0"]}
       ]
-    },
-    "node": { "tool": "npm-audit", "vulnerabilities": [...] }
+    }
   },
   "summary": {"critical": 0, "high": 1, "medium": 0, "low": 0, "total": 1},
   "cache_key": "..."
 }
 ```
 
-If `ecosystems_detected` is empty, the repo has no recognized manifest files — tell the user this skill doesn't apply.
-
-If a per-ecosystem entry has `error: "binary not installed"`, the auditor isn't on PATH; mention this so the user knows the result is partial.
-
-For each vulnerability, surface `package`, `id` (CVE/GHSA), `severity`, and `fix_versions` if present.
-
-### Step 4 — clean up
-
-```bash
-rm -rf /tmp/skill_sandbox/audit-*
-```
+If a scanner binary is missing (e.g. `pip-audit` not on PATH), the per-ecosystem entry has `error: "binary not installed"` and an empty `vulnerabilities` list. The skill does not crash; that ecosystem is simply skipped.
 
 ## Boundaries
 
-- **Read-only.** Never modifies the manifest or installs anything.
-- **Third-party only.** Will not flag issues in the user's own source code.
-- **Auditor binaries optional** — missing tools are reported, not crashed on.
-- **No platform errors raised** — script always exits 0; branch on `result.ok`.
+- **Read-only.** No manifest edits, no auto-upgrade.
+- **Third-party libraries only.** For SAST findings in the user's own code, use `security-scan`.
+- **No exceptions on tool failure.** Branch on `result.ok` and per-ecosystem `error` keys.
+- **URL guard.** Only `https://github.com/` accepted in `--repo-url`.
