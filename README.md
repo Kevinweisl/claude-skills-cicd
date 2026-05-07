@@ -1,14 +1,49 @@
 # claude-skills-cicd
 
-Run common CI/CD tasks on any public GitHub repo by chatting with Claude in plain English.
+Pre-release sanity-checking a repo today usually looks like this:
+
+```bash
+ruff check . && pytest          # lint + test
+pip-audit                       # CVE check
+semgrep --config=auto .         # SAST
+gitleaks detect                 # secret scan
+python -m build                 # try a wheel build
+```
+
+Five tools, five output formats, no common schema. With Claude Code and the 4 skills in this repo loaded, the same workflow becomes one sentence:
 
 ```text
-You     : audit deps of https://github.com/psf/requests
-Claude  : (picks `dependency-audit`, clones the repo, runs pip-audit)
+You     : audit my deps for known vulnerabilities
+Claude  : (picks `dependency-audit`, reads $PWD, detects Python, runs pip-audit)
 Claude  : Found 0 known CVEs in the Python deps.
 ```
 
-Four skills cover the common pre-release checks. They install natively in Claude Code via the plugin marketplace (see [Quick start](#quick-start)). They also ship behind a small Anthropic Agent SDK web shell in [`ui/`](ui/README.md) for evaluators without a local Claude Code install.
+The 4 skills cover **lint + test**, **build + release**, **dependency audit**, and **SAST + secret scan**. They install natively in Claude Code via the plugin marketplace (see [Quick start](#quick-start)). The same 4 skills are also exposed through a small Anthropic Agent SDK web shell in [`ui/`](ui/README.md) (FastAPI + vanilla JS, SSE streaming): a fully functional alternative path for trying them in a browser without Claude Code, or as a reference for deploying skills as a web service. The two paths share the same `scripts/run.py` actors but have a few intentional behavioural differences documented in [`ui/README.md`](ui/README.md#differences-from-native-claude-code).
+
+## How you'd actually use this
+
+Two scenarios. The first is the primary path; the second is occasionally useful.
+
+**Scenario A: you're working in your own repo.**
+
+```text
+~/work/my-app$ claude
+> lint and test this codebase
+> audit my deps
+> scan our handlers for SQL injection
+```
+
+The skills default to `$PWD`. No clone, no network. They validate that the directory is a git checkout and run scanners directly against the working tree, including any uncommitted changes.
+
+**Scenario B: you want to inspect a third-party repo without cloning it yourself.**
+
+```text
+> audit deps of https://github.com/psf/requests at main
+```
+
+Pass a `https://github.com/...` URL. The skill shallow-clones into `/tmp/skill_sandbox_*`, runs the scanner, and removes the sandbox in a `finally` block.
+
+> **Web shell exception:** the [`ui/`](ui/README.md) demo has no concept of `$PWD` (the FastAPI server is somewhere else), so it always uses the URL flow. Web shell is for evaluators or "try without installing Claude Code" scenarios.
 
 ## The 4 skills
 
@@ -16,7 +51,7 @@ Each skill is a deliberate design study, not just a different scanner.
 
 | Skill | What it does | Design highlight |
 |---|---|---|
-| `lint-and-test`     | ruff + pytest (Python) or npm lint + npm test (Node) on the cloned repo. | Multi-tool pipeline. Lint and test share install/cache state, so they sit under one skill. |
+| `lint-and-test`     | ruff + pytest (Python) or npm lint + npm test (Node) on the repo. | Multi-tool pipeline. Lint and test share install/cache state, so they sit under one skill. |
 | `build-and-release` | wheel / npm tarball / docker image. Dry-run by default; never pushes unless `--no-dry-run` is set. | Side-effecting write skill. Frontmatter sets `disable-model-invocation: true`, so Claude won't fire it from a soft natural-language ask. Human gate is the safety boundary. |
 | `dependency-audit`  | CVE scan via pip-audit / npm audit / cargo audit / govulncheck. Auto-detects ecosystem from lock files. | Multi-ecosystem auto-routing with one normalised output schema. Caller doesn't need to know the repo's language. |
 | `security-scan`     | Parallel SAST + secret scan: semgrep + bandit + gitleaks + (optional) trivy. | Parallel ensemble with severity-weighted dedup. Token-shape redaction (PAT, AWS, JWT, ...) applied to every output before it reaches Claude. |
@@ -32,7 +67,7 @@ This repo ships as a [Claude Code plugin marketplace](https://docs.claude.com/en
 
 Then run `/reload-plugins` (or restart the session). The 4 skills are now usable two ways:
 
-1. **Plain English.** Claude picks the right skill from each `SKILL.md` description. Example: `lint and test https://github.com/psf/black at v24.10.0`
+1. **Plain English.** Claude picks the right skill from each `SKILL.md` description. Example: `audit my deps`
 2. **Namespaced slash form** (bypass description routing):
    - `/claude-skills-cicd:lint-and-test`
    - `/claude-skills-cicd:build-and-release`
@@ -50,46 +85,57 @@ What you'll need installed:
 
 ## Smoke test
 
-Open a fresh Claude Code session and paste each prompt below. Same 4 scenarios as `evals/agent-shell-e2e/scenario-*.json`, so you know exactly what to expect.
+`cd` into any Python or Node git checkout (the skills default to `$PWD`). Open Claude Code there, then paste each prompt below.
 
-### 1. Unrecognised repo (graceful failure)
+### 1. Lint + test the current repo
 
 ```text
-lint and test https://github.com/octocat/Hello-World at master
+lint and test this repo
 ```
 
 - **Triggers**: `lint-and-test`
-- **Returns**: `ok=false, language=unknown, error="unsupported language: unknown (no pyproject.toml or package.json found)"`
-- **Proves**: clone path, URL guard, graceful failure on repos with no recognisable language manifest
+- **Reads**: `$PWD` (no clone, no network)
+- **Returns**: `ok=true, language="python", lint.passed=true/false, test.summary="..."` (or `language="unknown"` if neither `pyproject.toml` nor `package.json` exist)
+- **Proves**: cwd resolution, `.git/` guard, graceful unsupported-language path
 
-### 2. CVE audit (multi-ecosystem auto-detect)
+### 2. CVE audit on the current repo
+
+```text
+audit my deps for known vulnerabilities
+```
+
+- **Triggers**: `dependency-audit`
+- **Reads**: `$PWD` manifests (`pyproject.toml`, `package-lock.json`, `Cargo.lock`, `go.sum`)
+- **Returns**: `ok=true, ecosystems_detected=[...]` plus `findings_by_ecosystem.<eco>.vulnerabilities`. If a scanner binary is missing, that ecosystem reports `error: "binary not installed"` and an empty list (graceful degradation).
+- **Proves**: multi-ecosystem auto-detect, OSV/GHSA lookup, honest reporting when scanners are missing
+
+### 3. SAST + secrets on the current repo
+
+```text
+scan this codebase for SAST findings and leaked secrets
+```
+
+- **Triggers**: `security-scan`
+- **Reads**: `$PWD` source files
+- **Returns**: `ok=true, scan_types_run=["semgrep","gitleaks"], secrets_redacted_in_output=true, tokens_redacted_count=N` plus a `findings` array
+- **Proves**: parallel scanners + token-shape redaction. Any leaked credential is replaced by `<redacted-N>` before reaching Claude.
+
+### 4. Write skill stays gated
+
+```text
+build a wheel and ship version 1.2.3
+```
+
+- **Expected**: Claude should NOT fire the skill. `build-and-release` ships with `disable-model-invocation: true`, so Claude either declines, asks for explicit confirmation, or tells you to invoke it manually with `/claude-skills-cicd:build-and-release`.
+- **Proves**: the headline design choice. A side-effecting write skill is human-gated. If Claude fires it without asking, the safety boundary is broken.
+
+### Optional: scan a third-party GitHub repo without cloning yourself
 
 ```text
 audit deps of https://github.com/psf/requests at main
 ```
 
-- **Triggers**: `dependency-audit`
-- **Returns**: `ok=true, ecosystems_detected=["python"]` plus a `findings_by_ecosystem.python.vulnerabilities` list. Count varies with current advisories. If `pip-audit` isn't on `PATH`, you'll see `error: "binary not installed"` and an empty list, by design.
-- **Proves**: multi-ecosystem auto-detect, OSV/GHSA lookup, honest reporting when scanners are missing
-
-### 3. SAST + secrets (parallel scanners + redaction)
-
-```text
-scan https://github.com/psf/requests for SAST and secrets
-```
-
-- **Triggers**: `security-scan`
-- **Returns**: `ok=true, scan_types_run=["semgrep","gitleaks"], secrets_redacted_in_output=true` plus a `findings` array
-- **Proves**: parallel scanners + token-shape redaction. Any leaked credential is replaced by `<redacted-N>` before reaching Claude.
-
-### 4. Write skill (safety boundary)
-
-```text
-build a wheel for https://github.com/octocat/Hello-World, version 0.1.0
-```
-
-- **Expected**: Claude should NOT fire the skill. `build-and-release` ships with `disable-model-invocation: true`, so Claude either declines, asks for explicit confirmation, or tells you to invoke it manually with `/claude-skills-cicd:build-and-release`.
-- **Proves**: the headline design choice. A side-effecting write skill is human-gated. If Claude fires it without asking, the safety boundary is broken.
+The same skill picks up the `https://github.com/...` URL, shallow-clones into `/tmp/skill_sandbox_*`, runs the audit, and cleans the sandbox up. URL guard rejects anything not `https://github.com/`.
 
 > Repeating any prompt within 5 minutes returns `_cache_hit: true` from the in-memory idempotency cache. No re-clone, no re-run.
 
@@ -97,15 +143,31 @@ build a wheel for https://github.com/octocat/Hello-World, version 0.1.0
 
 Every skill is the same two-piece shape:
 
-- `SKILL.md`: YAML frontmatter + playbook prose. This is what Claude reads.
-- `scripts/run.py`: a small Python script. This is what runs.
+- `SKILL.md`: YAML frontmatter (description, allowed-tools, gates) + playbook prose. This is what Claude reads at routing time.
+- `scripts/run.py`: a small Python script. This is what actually executes when Claude invokes the skill.
 
-Two contracts hold regardless of how the skill is invoked (Claude Code, the [web shell](ui/README.md), or a plain `python` call):
+Three contracts hold regardless of how a skill is invoked (Claude Code native, the [web shell](ui/README.md), or a plain `python` call):
 
-1. **Deterministic JSON output.** `scripts/run.py` emits exactly one JSON object on stdout. It never raises on tool failure (only on missing `--repo-path`). Claude can rely on parsing the result.
-2. **Universal guardrails in `skills/_shared/`.** Clones restricted to `https://github.com/`. Secret-shaped tokens (GitHub PAT, AWS key, Anthropic key, NIM key, JWT) replaced with `<redacted-N>` before any output reaches Claude.
+1. **Repo resolution is uniform.** Each `scripts/run.py` accepts `--repo-path` (default: `$PWD`) or `--repo-url`. The shared `_shared/repo_resolver.py` handles both: cwd flow validates `.git/` exists; URL flow shallow-clones into a `/tmp/skill_sandbox_*` and returns a cleanup callback that the skill calls in `finally`.
+2. **Deterministic JSON output.** `scripts/run.py` emits exactly one JSON object on stdout. It never raises on tool failure. Claude can rely on parsing the result.
+3. **Universal guardrails in `skills/_shared/`.** Clones restricted to `https://github.com/`. Secret-shaped tokens (GitHub PAT, AWS key, Anthropic key, NIM key, JWT) replaced with `<redacted-N>` before any output reaches Claude.
 
 For the web-shell-specific architecture (FastAPI + `tool_runner.py` sandbox + idempotency cache), see [`ui/README.md`](ui/README.md#architecture).
+
+## Security boundaries
+
+Layered defense. No single guard carries the whole load.
+
+| Boundary | Where it lives | What it prevents |
+|---|---|---|
+| URL guard (primary) | `skills/_shared/git_fetch.py` rejects anything not `https://github.com/` | SSRF, `file://` exfiltration, ssh-keyless host pivots |
+| URL guard (secondary) | `src/agent_shell/tool_runner.py` re-checks before calling the script | Defense in depth; web shell layer that can't be bypassed by editing a skill script |
+| `.git/` guard | `skills/_shared/repo_resolver.py` checks the resolved cwd path | Stops accidental scans of `~/Downloads/` and similar non-repo directories |
+| Sandbox isolation | URL flow uses `tempfile.mkdtemp(prefix="skill_sandbox_")` + `try/finally` cleanup | Per-invocation isolation; cleanup guaranteed even if the script crashes |
+| Token-shape redaction | `skills/_shared/redact.py`, applied before any output is emitted | Prevents secret-scan output from leaking the secrets it just found back into LLM context |
+| Write-skill gate | `build-and-release/SKILL.md` sets `disable-model-invocation: true` | Side-effecting operations cannot be auto-fired by Claude from a soft natural-language ask |
+| Dry-run default | `build-and-release/scripts/run.py` requires explicit `--no-dry-run` to push | Even on explicit invocation, the default is build-without-push |
+| BYOK in browser | `ui/app.js` keeps `sk-ant-*` in `sessionStorage`, sends as `X-Anthropic-Key` header | Web-shell server never persists, logs, or sees the key in storage |
 
 ## Evaluation
 
@@ -152,11 +214,12 @@ Claude actually picking the right skill from natural-language prompts in the UI 
 | `skills/build-and-release/` | `SKILL.md` + `scripts/run.py` for the build skill (write-gated) |
 | `skills/dependency-audit/`  | `SKILL.md` + `scripts/run.py` for the CVE audit skill |
 | `skills/security-scan/`     | `SKILL.md` + `scripts/run.py` for the SAST + secret scan skill |
-| `skills/_shared/`           | Helpers reused by all 4 skills (subprocess wrapper, token-shape redaction, github-only git fetch) |
+| `skills/_shared/`           | Helpers reused by all 4 skills (subprocess wrapper, token-shape redaction, github-only git fetch, cwd-or-URL repo resolver) |
 | `src/agent_shell/`          | FastAPI backend that exposes the skills to Claude via the Anthropic SDK (powers the `ui/` web demo) |
 | `ui/`                       | Vanilla-JS chat UI for the web demo. See [`ui/README.md`](ui/README.md). |
 | `evals/skill-trigger/`      | Trigger-eval harness (NIM K=3 vote) |
 | `evals/agent-shell-e2e/`    | 8 real-repo end-to-end scenarios (clone → script → JSON parse) |
+| `Dockerfile`, `.dockerignore` | Container build for the web shell. Ready to deploy on Zeabur, Render, Fly.io, or any platform that auto-detects Dockerfiles. |
 
 ## AI collaboration notes
 
@@ -197,7 +260,7 @@ By design. `build-and-release` ships with `disable-model-invocation: true` in it
 - Invoke `/claude-skills-cicd:build-and-release` explicitly, or
 - Be very explicit in chat (e.g. *"run the build-and-release skill on this repo"*). Claude will still typically ask for confirmation.
 
-See [The 4 skills](#the-4-skills) for the rationale.
+See [The 4 skills](#the-4-skills) and [Security boundaries](#security-boundaries) for the rationale.
 
 ### Q4. Which scanner binaries do I need to install?
 
@@ -214,7 +277,11 @@ The skill scripts themselves need Python 3.12+ and `git`, both usually already p
 
 ### Q5. I don't have Claude Code installed at all. Can I still demo this?
 
-Yes. The same 4 skills are also exposed through a small Anthropic Agent SDK web shell. Bring your own `sk-ant-*` key and try them in a browser. See [`ui/README.md`](ui/README.md) for setup.
+Yes. The same 4 skills are also exposed through a small Anthropic Agent SDK web shell. Bring your own `sk-ant-*` key and try them in a browser. See [`ui/README.md`](ui/README.md) for setup, or deploy the bundled `Dockerfile` to any container platform.
+
+### Q6. What gets scanned: my whole working tree, or only committed code?
+
+Whatever is on disk in `$PWD`. The skills do not consult `git status` or filter by HEAD. Local edits, untracked files, and `.gitignore`'d artifacts are all visible to scanners. This is intentional: when you ask Claude to "scan this codebase", you usually mean "what I'm working on right now", not "what I've already committed". Use the `--repo-url` flow if you specifically want to inspect a clean ref.
 
 ## License
 
