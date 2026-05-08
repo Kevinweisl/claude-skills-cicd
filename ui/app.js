@@ -69,6 +69,16 @@ function escapeHtml(s) {
 // ── Conversation state ─────────────────────────────────────────────────────
 const messages = [];
 
+// Enter to send, Shift+Enter for newline. Matches the ChatGPT / Claude.ai /
+// Slack convention. The textarea is intentionally still resizable so the user
+// can compose multi-line prompts; Shift+Enter inserts a newline.
+userInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+    e.preventDefault();
+    form.requestSubmit();
+  }
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = userInput.value.trim();
@@ -83,6 +93,13 @@ form.addEventListener("submit", async (e) => {
   messages.push({ role: "user", content: text });
   userInput.value = "";
   userInput.disabled = true;
+  // Show a "thinking" indicator immediately so the user knows the request
+  // is in flight. It's removed when the first SSE event arrives (text or
+  // tool_use), or on error / completion.
+  let thinkingBlock = addBlock("thinking", "Claude is analysing");
+  function clearThinking() {
+    if (thinkingBlock) { thinkingBlock.remove(); thinkingBlock = null; }
+  }
 
   let resp;
   try {
@@ -95,12 +112,14 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ messages }),
     });
   } catch (err) {
+    clearThinking();
     addBlock("error", `network error: ${err.message}`);
     userInput.disabled = false;
     return;
   }
 
   if (!resp.ok) {
+    clearThinking();
     const body = await resp.text().catch(() => "");
     addBlock("error", `HTTP ${resp.status}: ${body || resp.statusText}`);
     userInput.disabled = false;
@@ -131,17 +150,22 @@ form.addEventListener("submit", async (e) => {
       try { payload = JSON.parse(dataLine.slice(5).trim()); } catch { continue; }
 
       if (type === "text") {
+        clearThinking();
         if (!textBlock) textBlock = addBlock("assistant", "");
         textBlock.textContent += payload.text;
       } else if (type === "tool_use") {
+        clearThinking();
         textBlock = null;
         addToolUse(payload.name, payload.input);
       } else if (type === "tool_result") {
+        clearThinking();
         addToolResult(payload.name, payload.result);
       } else if (type === "done") {
+        clearThinking();
         textBlock = null;
         if (payload.warning) addBlock("error", payload.warning);
       } else if (type === "error") {
+        clearThinking();
         addBlock("error", payload.error || "unknown error");
       }
     }
