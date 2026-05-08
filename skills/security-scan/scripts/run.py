@@ -35,7 +35,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from _shared.redact import redact_tokens  # noqa: E402
 from _shared.repo_resolver import resolve_repo  # noqa: E402
-from _shared.subprocess_helper import hash_inputs  # noqa: E402
+from _shared.subprocess_helper import hash_inputs, install_hint_for  # noqa: E402
 
 
 _SEV_RANK = {
@@ -68,11 +68,14 @@ async def _run_async(cmd: list[str], cwd: str | None = None,
             stdout, stderr = b"", b"timeout"
             timed_out = True
     except FileNotFoundError as exc:
+        binary = exc.filename or (cmd[0] if cmd else "?")
         return {
             "exit_code": -1, "stdout": "",
-            "stderr": f"binary not found: {exc.filename}",
+            "stderr": f"binary not found: {binary}",
             "duration_ms": int((time.perf_counter() - t0) * 1000),
             "timed_out": False,
+            "missing_binary": binary,
+            "install_hint": install_hint_for(binary),
         }
     return {
         "exit_code": proc.returncode if not timed_out else -1,
@@ -84,31 +87,42 @@ async def _run_async(cmd: list[str], cwd: str | None = None,
 
 
 async def _run_scanners(repo: Path, scan_types: set[str],
-                         image_name: str) -> tuple[list[dict], list[str]]:
+                         image_name: str) -> tuple[list[dict], list[str], list[dict]]:
+    """Returns (findings, tools_run, missing_tools).
+
+    A scanner is "missing" when its scan_type is requested but the binary
+    is not on PATH. We surface these in the output so the user sees an
+    install hint instead of silently producing partial results.
+    """
     tasks: list[tuple[str, asyncio.Task]] = []
-    if "sast" in scan_types and shutil.which("semgrep"):
-        tasks.append(("semgrep", asyncio.create_task(_run_async(
-            ["semgrep", "--config=auto", "--json", "--quiet"], cwd=str(repo),
-        ))))
-    if "sast" in scan_types and shutil.which("bandit"):
-        tasks.append(("bandit", asyncio.create_task(_run_async(
-            ["bandit", "-r", str(repo), "-f", "json", "-q"],
-        ))))
-    if "secrets" in scan_types and shutil.which("gitleaks"):
-        tasks.append(("gitleaks", asyncio.create_task(_run_async(
-            ["gitleaks", "detect", "--no-banner",
-             "--report-format=json", "--report-path=-"],
-            cwd=str(repo),
-        ))))
-    if "container" in scan_types and image_name and shutil.which("trivy"):
-        tasks.append(("trivy", asyncio.create_task(_run_async(
-            ["trivy", "image", "--quiet", "--format=json", image_name],
-        ))))
+    missing_tools: list[dict] = []
+
+    def _add(scan_type: str, scanner: str, cmd: list[str], cwd: str | None = None):
+        if scan_type not in scan_types:
+            return
+        if shutil.which(scanner):
+            tasks.append((scanner, asyncio.create_task(_run_async(cmd, cwd=cwd))))
+        else:
+            missing_tools.append({
+                "tool": scanner,
+                "install_hint": install_hint_for(scanner),
+            })
+
+    _add("sast", "semgrep",
+         ["semgrep", "--config=auto", "--json", "--quiet"], cwd=str(repo))
+    _add("sast", "bandit",
+         ["bandit", "-r", str(repo), "-f", "json", "-q"])
+    _add("secrets", "gitleaks",
+         ["gitleaks", "detect", "--no-banner",
+          "--report-format=json", "--report-path=-"], cwd=str(repo))
+    if "container" in scan_types and image_name:
+        _add("container", "trivy",
+             ["trivy", "image", "--quiet", "--format=json", image_name])
 
     findings: list[dict] = []
     tools_run: list[str] = []
     if not tasks:
-        return findings, tools_run
+        return findings, tools_run, missing_tools
 
     for tool, task in tasks:
         res = await task
@@ -163,7 +177,7 @@ async def _run_scanners(repo: Path, scan_types: set[str],
                         "message": (v.get("Title") or "")[:120],
                     })
 
-    return findings, tools_run
+    return findings, tools_run, missing_tools
 
 
 def _dedup(findings: list[dict]) -> list[dict]:
@@ -196,20 +210,25 @@ async def main_async() -> int:
     repo, cleanup = resolve_repo(args.repo_path, args.repo_url, args.ref)
     try:
         scan_types = {s.strip() for s in args.scan_types.split(",") if s.strip()}
-        findings, tools_run = await _run_scanners(repo, scan_types, args.image_name)
+        findings, tools_run, missing_tools = await _run_scanners(
+            repo, scan_types, args.image_name,
+        )
 
         if not tools_run:
             warning = (
                 "no scan tools available; install semgrep / gitleaks / "
                 "bandit / trivy (or scan_types omits all available tools)"
             )
-            print(json.dumps({
+            out: dict = {
                 "ok": True, "findings": [], "by_severity": {},
                 "scan_types_run": [], "secrets_redacted_in_output": True,
                 "tokens_redacted_count": 0,
                 "warnings": [warning],
                 "cache_key": hash_inputs([*sorted(scan_types)]),
-            }, indent=2))
+            }
+            if missing_tools:
+                out["missing_tools"] = missing_tools
+            print(json.dumps(out, indent=2))
             return 0
 
         deduped = _dedup(findings)
@@ -231,6 +250,8 @@ async def main_async() -> int:
             "tokens_redacted_count": redactions,
             "cache_key": hash_inputs([*sorted(scan_types)]),
         }
+        if missing_tools:
+            output["missing_tools"] = missing_tools
         print(json.dumps(output, indent=2))
         return 0
     finally:

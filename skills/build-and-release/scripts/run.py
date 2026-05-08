@@ -31,11 +31,29 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from _shared.repo_resolver import resolve_repo  # noqa: E402
-from _shared.subprocess_helper import run_subprocess  # noqa: E402
+from _shared.subprocess_helper import install_hint_for, run_subprocess  # noqa: E402
+
+
+def _missing_tool_response(target: str, r: dict, hint_for: str | None = None) -> dict:
+    """Construct a uniform missing-tool error response."""
+    tool = hint_for or r.get("missing_binary") or "?"
+    return {
+        "ok": False,
+        "target": target,
+        "error": f"required tool not installed: {tool}",
+        "install_hint": install_hint_for(tool),
+        "stderr_tail": r.get("stderr", "")[-500:],
+    }
 
 
 def _build_wheel(repo: Path, version: str, dry_run: bool) -> dict:
     build = run_subprocess(["python", "-m", "build", "--wheel"], cwd=str(repo))
+    if build.get("missing_binary"):
+        return _missing_tool_response("wheel", build)
+    # `python -m build` returns non-zero if `build` module isn't installed.
+    # Detect that specific case so the user gets a `pip install build` hint.
+    if build["exit_code"] != 0 and "No module named build" in build.get("stderr", ""):
+        return _missing_tool_response("wheel", build, hint_for="build")
     if build["exit_code"] != 0:
         return {
             "ok": False,
@@ -55,6 +73,8 @@ def _build_wheel(repo: Path, version: str, dry_run: bool) -> dict:
     push_log = ""
     if not dry_run:
         twine = run_subprocess(["twine", "upload", str(wheels[0])], cwd=str(repo))
+        if twine.get("missing_binary"):
+            return _missing_tool_response("wheel", twine)
         pushed = twine["exit_code"] == 0
         push_log = (twine["stdout"][-500:] + twine["stderr"][-500:])
     return {
@@ -69,6 +89,8 @@ def _build_wheel(repo: Path, version: str, dry_run: bool) -> dict:
 
 def _build_npm(repo: Path, dry_run: bool) -> dict:
     build = run_subprocess(["npm", "run", "build"], cwd=str(repo))
+    if build.get("missing_binary"):
+        return _missing_tool_response("npm", build)
     if build["exit_code"] != 0:
         return {
             "ok": False, "target": "npm", "error": "build failed",
@@ -109,6 +131,8 @@ def _build_docker(repo: Path, version: str, image_name: str, dry_run: bool) -> d
         }
     tag = f"{image_name}:{version}"
     build = run_subprocess(["docker", "build", "-t", tag, "."], cwd=str(repo))
+    if build.get("missing_binary"):
+        return _missing_tool_response("docker", build)
     if build["exit_code"] != 0:
         return {
             "ok": False, "target": "docker", "error": "docker build failed",

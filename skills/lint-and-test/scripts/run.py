@@ -42,6 +42,13 @@ def detect_language(repo: Path) -> str:
     return "unknown"
 
 
+def _maybe_missing(r: dict) -> dict | None:
+    """If subprocess result indicates a missing binary, return the hint dict."""
+    if r.get("missing_binary"):
+        return {"tool": r["missing_binary"], "install_hint": r["install_hint"]}
+    return None
+
+
 def run_python(repo: Path) -> dict:
     ruff = run_subprocess(["ruff", "check", "."], cwd=str(repo))
     lint_passed = ruff["exit_code"] == 0
@@ -55,13 +62,15 @@ def run_python(repo: Path) -> dict:
     test_summary = (
         summary_match.group(0) if summary_match else pytest_run["stdout"][-200:]
     )
-    return {
+    missing = [m for m in (_maybe_missing(ruff), _maybe_missing(pytest_run)) if m]
+    out = {
         "lint": {
             "tool": "ruff",
             "passed": lint_passed,
             "exit_code": ruff["exit_code"],
             "issues": ruff["stdout"].splitlines()[:50] if not lint_passed else [],
             "duration_ms": ruff["duration_ms"],
+            **({"install_hint": ruff["install_hint"]} if ruff.get("missing_binary") else {}),
         },
         "test": {
             "tool": "pytest",
@@ -70,22 +79,28 @@ def run_python(repo: Path) -> dict:
             "summary": test_summary,
             "duration_ms": pytest_run["duration_ms"],
             "timed_out": pytest_run.get("timed_out", False),
+            **({"install_hint": pytest_run["install_hint"]} if pytest_run.get("missing_binary") else {}),
         },
         "language": "python",
         "ok": lint_passed and test_passed,
     }
+    if missing:
+        out["missing_tools"] = missing
+    return out
 
 
 def run_node(repo: Path) -> dict:
     lint = run_subprocess(["npm", "run", "lint", "--silent"], cwd=str(repo))
     test = run_subprocess(["npm", "test", "--silent"], cwd=str(repo))
-    return {
+    missing = [m for m in (_maybe_missing(lint), _maybe_missing(test)) if m]
+    out = {
         "lint": {
             "tool": "npm-run-lint",
             "passed": lint["exit_code"] == 0,
             "exit_code": lint["exit_code"],
             "issues": lint["stdout"].splitlines()[-30:],
             "duration_ms": lint["duration_ms"],
+            **({"install_hint": lint["install_hint"]} if lint.get("missing_binary") else {}),
         },
         "test": {
             "tool": "npm-test",
@@ -93,10 +108,14 @@ def run_node(repo: Path) -> dict:
             "exit_code": test["exit_code"],
             "summary": test["stdout"][-200:],
             "duration_ms": test["duration_ms"],
+            **({"install_hint": test["install_hint"]} if test.get("missing_binary") else {}),
         },
         "language": "node",
         "ok": lint["exit_code"] == 0 and test["exit_code"] == 0,
     }
+    if missing:
+        out["missing_tools"] = missing
+    return out
 
 
 def main() -> int:

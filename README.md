@@ -79,7 +79,7 @@ What you'll need installed:
 | Requirement | Why |
 |---|---|
 | Python 3.12+, `git` | The skill scripts are Python; clones use git. Both already present in most dev environments. |
-| Scanner binaries (`ruff`, `pip-audit`, `semgrep`, ...) | Install only what you'll actually use. Missing ones return `error: "binary not installed"` instead of crashing. Per-skill list in [FAQ Q4](#q4-which-scanner-binaries-do-i-need-to-install). |
+| Scanner binaries (`ruff`, `pip-audit`, `semgrep`, ...) | Install only what you'll actually use. Missing ones don't crash — the skill output includes an `install_hint` field naming the exact command (e.g. `pip install pip-audit`, `brew install gitleaks`) so Claude can suggest it back to you. Per-skill list in [FAQ Q4](#q4-which-scanner-binaries-do-i-need-to-install). |
 
 > Other install paths (manual file copy, local `--plugin-dir` for hacking on a skill) and other gotchas live in the [FAQ](#faq) at the bottom.
 
@@ -264,16 +264,18 @@ See [The 4 skills](#the-4-skills) and [Security boundaries](#security-boundaries
 
 ### Q4. Which scanner binaries do I need to install?
 
-Only the ones for the skills you'll actually use. Each skill detects its tools at runtime; if a binary is missing, the skill returns `error: "binary not installed"` and an empty result list:
+Only the ones for the skills you'll actually use. Each skill detects its tools at runtime; if a binary is missing, the skill returns an `install_hint` field with the exact install command instead of crashing — Claude reads it and suggests the command back to you in chat.
 
-| Skill | Required binaries |
-|---|---|
-| `lint-and-test`     | `ruff` + `pytest` (Python repos), or `npm` (Node repos) |
-| `build-and-release` | `python -m build` (wheels), `npm pack` (npm), `docker` (images) |
-| `dependency-audit`  | any of `pip-audit` / `npm` / `cargo audit` / `govulncheck` |
-| `security-scan`     | any of `semgrep` / `bandit` / `gitleaks` / `trivy` |
+| Skill | Required binaries | Install hint |
+|---|---|---|
+| `lint-and-test`     | `ruff` + `pytest` (Python repos), or `npm` (Node repos) | `pip install ruff pytest` / install Node.js |
+| `build-and-release` | `python -m build` (wheels), `npm pack` (npm), `docker` (images) | `pip install build twine` / `brew install --cask docker` |
+| `dependency-audit`  | any of `pip-audit` / `npm` / `cargo audit` / `govulncheck` | `pip install pip-audit` / `cargo install cargo-audit` / `go install golang.org/x/vuln/cmd/govulncheck@latest` |
+| `security-scan`     | any of `semgrep` / `bandit` / `gitleaks` / `trivy`         | `pip install semgrep bandit` / `brew install gitleaks aquasecurity/trivy/trivy` |
 
 The skill scripts themselves need Python 3.12+ and `git`, both usually already present.
+
+The full hint table lives in `skills/_shared/subprocess_helper.py::INSTALL_HINTS`. Why a `/setup` skill isn't included: cross-platform package management (brew vs apt vs scoop, conda vs venv vs system Python) is brittle to automate; surfacing per-tool install hints in the skill output gives Claude enough context to suggest the right command without a fragile installer skill.
 
 ### Q5. I don't have Claude Code installed at all. Can I still demo this?
 

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Build artefacts
+dist/
+build/
+
+# Virtualenvs (keep none in tree; declare a clean conda env elsewhere)
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Skill sandbox dirs (just in case a sandbox isn't cleaned up due to a crash)
+skill_sandbox_*/

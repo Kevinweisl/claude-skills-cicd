@@ -31,7 +31,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from _shared.repo_resolver import resolve_repo  # noqa: E402
-from _shared.subprocess_helper import hash_inputs, run_subprocess  # noqa: E402
+from _shared.subprocess_helper import (  # noqa: E402
+    hash_inputs,
+    install_hint_for,
+    run_subprocess,
+)
 
 import hashlib
 
@@ -63,6 +67,7 @@ def _detect_ecosystems(repo: Path) -> list[str]:
 def _audit_python(repo: Path) -> dict:
     if not shutil.which("pip-audit"):
         return {"tool": "pip-audit", "error": "binary not installed",
+                "install_hint": install_hint_for("pip-audit"),
                 "vulnerabilities": []}
     r = run_subprocess(["pip-audit", "-f", "json"], cwd=str(repo))
     try:
@@ -85,6 +90,7 @@ def _audit_python(repo: Path) -> dict:
 def _audit_node(repo: Path) -> dict:
     if not shutil.which("npm"):
         return {"tool": "npm-audit", "error": "npm not installed",
+                "install_hint": install_hint_for("npm"),
                 "vulnerabilities": []}
     r = run_subprocess(["npm", "audit", "--json"], cwd=str(repo))
     try:
@@ -112,6 +118,7 @@ def _audit_node(repo: Path) -> dict:
 def _audit_rust(repo: Path) -> dict:
     if not shutil.which("cargo"):
         return {"tool": "cargo-audit", "error": "cargo not installed",
+                "install_hint": install_hint_for("cargo"),
                 "vulnerabilities": []}
     r = run_subprocess(
         ["cargo", "audit", "--json", "--no-fetch"], cwd=str(repo),
@@ -135,6 +142,7 @@ def _audit_rust(repo: Path) -> dict:
 def _audit_go(repo: Path) -> dict:
     if not shutil.which("govulncheck"):
         return {"tool": "govulncheck", "error": "binary not installed",
+                "install_hint": install_hint_for("govulncheck"),
                 "vulnerabilities": []}
     r = run_subprocess(["govulncheck", "-json", "./..."], cwd=str(repo))
     vulns = []
@@ -195,6 +203,11 @@ def main() -> int:
                 if sev in summary:
                     summary[sev] += 1
 
+        missing_tools = [
+            {"tool": r["tool"], "install_hint": r["install_hint"]}
+            for r in findings_by_ecosystem.values()
+            if r.get("install_hint")
+        ]
         output = {
             "ok": True,
             "findings_by_ecosystem": findings_by_ecosystem,
@@ -203,6 +216,8 @@ def main() -> int:
             # cache_key is content-based: ecosystem set + manifest hashes.
             "cache_key": hash_inputs([*sorted(detected), _manifest_hash(repo)]),
         }
+        if missing_tools:
+            output["missing_tools"] = missing_tools
         print(json.dumps(output, indent=2))
         return 0
     finally:
