@@ -13,10 +13,8 @@ dist
 build
 *.egg-info
 
-# Local-only docs / planning material
-docs
+# Local-only material; not needed at runtime
 prompts
-tasks
 tests
 scripts
 

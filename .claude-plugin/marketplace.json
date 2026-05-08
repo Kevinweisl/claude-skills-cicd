@@ -1,6 +1,6 @@
 {
   "name": "cicd-skills",
-  "description": "Reusable Claude Code skills for GitHub CI/CD pipelines — built and maintained by Kevin Wei",
+  "description": "Reusable Claude Code skills for GitHub CI/CD pipelines, built and maintained by Kevin Wei",
   "owner": {
     "name": "Kevin Wei",
     "email": "weisl@nlg.csie.ntu.edu.tw"

@@ -19,7 +19,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3",
-  "pytest-asyncio>=0.24",
   "ruff>=0.7",
 ]
 
@@ -33,8 +32,10 @@ sources = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-asyncio_mode = "auto"
 pythonpath = ["src", "skills"]
+markers = [
+  "network: tests that require real internet (e.g. clone a public github repo); skipped by default unless `-m network` is passed",
+]
 
 [tool.ruff]
 line-length = 100

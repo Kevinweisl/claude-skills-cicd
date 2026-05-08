@@ -223,7 +223,7 @@ Claude actually picking the right skill from natural-language prompts in the UI 
 
 ## AI collaboration notes
 
-This repo was built with Claude Code. Major prompts and design decisions are preserved in `prompts/` and `docs/`.
+This repo was built with Claude Code. Major prompts and design decisions are preserved in [`prompts/`](prompts/README.md): one file per non-trivial decision, written as *what was asked → options surfaced → what we picked → why → outcome*.
 
 ## FAQ
 

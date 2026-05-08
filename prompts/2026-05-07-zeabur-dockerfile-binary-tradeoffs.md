@@ -78,7 +78,7 @@ COPY ui ./ui
 
 `pyproject.toml` rarely changes. Code changes constantly. Putting `pip install` before `COPY src` means most builds reuse the deps layer.
 
-### `.dockerignore` strips `.git`, `docs/`, `tests/`, `prompts/`, `tasks/`
+### `.dockerignore` strips `.git`, `tests/`, `prompts/`, `scripts/`
 
 Image doesn't need them at runtime. Halves the build context.
 

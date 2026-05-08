@@ -10,7 +10,21 @@ Methodology adapted from Anthropic's skill-creator (`run_loop.py`):
     FPR (should_not_trigger queries incorrectly picked the skill).
   - Confusion matrix shows which skill pairs get conflated.
 
-Usage:
+Reproducing this run:
+  Requires NVIDIA NIM API access (set NIM_API_KEY env var) plus the
+  `shared.llm_client.vote_role` helper that this repo's split-off doesn't
+  ship — it lives in the original mono-repo because three repos share it.
+  The runner therefore lazy-imports it inside main(); the file can be read
+  / inspected / linted without the dep, but a real run will fail with a
+  clear ImportError if you try to execute it standalone.
+
+  For evaluator review, the saved artefacts are the authoritative output:
+    - last_run.json / last_ambiguity_run.json : full per-query vote records
+    - cost_report_140q.md / cost_report_ambiguity.md : aggregated reports
+    - analyze_last_run.py : regenerates reports from saved JSON without
+                            calling any LLM (offline, free, deterministic).
+
+Usage (only works in the mono-repo with shared/ available):
     python evals/skill-trigger/runner.py
     python evals/skill-trigger/runner.py --skill lint-and-test  # only one
     python evals/skill-trigger/runner.py --queries-file path/to/custom.json
@@ -40,8 +54,9 @@ try:
 except ImportError:
     pass
 
-from shared.llm_client import vote_role  # noqa: E402
-
+# The actual LLM voter is lazy-imported inside main() so the rest of this
+# file (parsing, scoring, report formatting) can be inspected / linted /
+# unit-tested even when shared/ isn't available in this repo split.
 import yaml  # noqa: E402
 
 NONE_LABEL = "NONE"
@@ -130,6 +145,20 @@ async def evaluate_query(
     duration_s is wall-clock for the K=N parallel vote (the slowest voter
     dominates), so per-query latency tracking is meaningful for cost reports.
     """
+    # Lazy import: shared.llm_client lives in the original mono-repo, not
+    # in this split. Importing only on actual run lets file-level inspection
+    # (linting / reading / unit-testing the parsing helpers above) work.
+    try:
+        from shared.llm_client import vote_role
+    except ImportError as exc:
+        raise ImportError(
+            "shared.llm_client is not available in this repo split. "
+            "To re-run the eval, use the original mono-repo or replicate "
+            "the NIM K=3 vote helper locally. The saved last_run.json and "
+            "cost_report_*.md files are the authoritative artefacts; use "
+            "analyze_last_run.py to regenerate reports without calling LLMs."
+        ) from exc
+
     valid = set(skill_descs)
     messages = _build_messages(skill_descs, query)
     parser = lambda raw: _parse_skill_pick(raw, valid)
