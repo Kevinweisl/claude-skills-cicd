@@ -60,22 +60,30 @@ def test_identical_calls_short_circuit_via_cache(tmp_path: Path):
     assert counter["n"] == 1, "second call must not re-run the subprocess"
 
 
-def test_failed_runs_are_not_cached(tmp_path: Path):
-    """Transient failure should be retryable — don't freeze ok=false for 5 minutes."""
+def test_script_ok_false_results_are_cached(tmp_path: Path):
+    """ok=false from the script (e.g. unsupported language, no manifest found)
+    is deterministic given the repo state — caching it is fine and gives the
+    user fast repeat answers. Infrastructure failures (clone failed, binary
+    missing, JSON parse failed) bypass cache_store via early returns in
+    run_skill, so transient failures still get a fresh attempt next time.
+    This pins the post-bugfix behaviour: the ok flag is NOT a cache gate."""
     tool_runner.cache_clear()
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "pyproject.toml").write_text("[project]\nname='x'\nversion='0.0.1'\n")
 
     fake_sub, counter = _fake_run_subprocess_factory(
-        '{"ok": false, "error": "transient"}'
+        '{"ok": false, "error": "unsupported language: unknown"}'
     )
 
     with patch("agent_shell.tool_runner.run_subprocess", side_effect=fake_sub):
-        tool_runner.run_skill("lint-and-test", {"repo": str(repo)})
-        tool_runner.run_skill("lint-and-test", {"repo": str(repo)})
+        first = tool_runner.run_skill("lint-and-test", {"repo": str(repo)})
+        second = tool_runner.run_skill("lint-and-test", {"repo": str(repo)})
 
-    assert counter["n"] == 2, "ok=false must be re-attempted, not cached"
+    assert first.get("ok") is False
+    assert "_cache_hit" not in first
+    assert second.get("_cache_hit") is True
+    assert counter["n"] == 1, "deterministic ok=false must be cached, not re-run"
 
 
 def test_different_inputs_do_not_share_cache(tmp_path: Path):
