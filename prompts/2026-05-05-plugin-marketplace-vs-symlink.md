@@ -1,4 +1,4 @@
-# 2026-05-05 — Plugin Marketplace format vs `~/.claude/skills/` symlink
+# 2026-05-05: Plugin Marketplace format vs `~/.claude/skills/` symlink
 
 ## Context
 
@@ -38,7 +38,7 @@ Properties of the symlink path:
 - **No namespace** (skill name is the bare folder name).
 - **No update mechanism** (you `git pull` and the symlink picks it up automatically).
 - **Manual setup** with a per-skill `ln -sfn` loop.
-- **Non-standard** — doesn't match how published plugins are normally consumed.
+- **Non-standard**: doesn't match how published plugins are normally consumed.
 
 ## Options considered
 
@@ -72,7 +72,7 @@ Specific manifests:
 }
 ```
 
-The same repo is both the marketplace and the only plugin in it. `source: "./"` (note the `./` prefix — `.` alone fails marketplace validation per Anthropic docs) points to repo root.
+The same repo is both the marketplace and the only plugin in it. `source: "./"` (note the `./` prefix; `.` alone fails marketplace validation per Anthropic docs) points to repo root.
 
 ## Subtlety: validation
 

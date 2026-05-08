@@ -18,7 +18,7 @@ def tmp_path(tmp_path: Path) -> Path:
     """Same as pytest's built-in tmp_path, but pre-marked as a git repo.
 
     The skills' repo_resolver requires `.git/` to exist before it accepts
-    a path. Creating an empty `.git/` directory is enough — the skills
+    a path. Creating an empty `.git/` directory is enough; the skills
     don't actually shell out to git for cwd-flow operations.
     """
     (tmp_path / ".git").mkdir()

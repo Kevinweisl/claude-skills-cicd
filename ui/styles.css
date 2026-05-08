@@ -1,4 +1,4 @@
-/* Agent Shell — minimal styling, no framework. */
+/* Agent Shell: minimal styling, no framework. */
 
 * { box-sizing: border-box; }
 
@@ -197,7 +197,7 @@ button:disabled { background: #94d3a2; cursor: not-allowed; }
   body {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
-    /* dvh tracks the *dynamic* viewport height — without this, mobile
+    /* dvh tracks the *dynamic* viewport height; without this, mobile
        Safari's collapsing URL bar causes bottom-cutoff on the chat box. */
     height: 100dvh;
   }

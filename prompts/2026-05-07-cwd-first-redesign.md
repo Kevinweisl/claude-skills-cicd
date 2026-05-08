@@ -1,4 +1,4 @@
-# 2026-05-07 — Cwd-first invocation: skills default to `$PWD`, URL becomes opt-in
+# 2026-05-07: Cwd-first invocation, skills default to `$PWD`, URL becomes opt-in
 
 ## Context
 
@@ -69,4 +69,4 @@ The `.git/` guard prevents accidentally scanning `~/Downloads/` or some non-repo
 
 ## What this captures for the interviewer
 
-The first design wasn't wrong — it solved the demo case. The cwd-first design solves the **actual usage** case. Asking "what does the developer actually do" surfaced the misalignment. The fix is small (one shared helper, four 5-line argparse changes) but meaningfully changes what the skills feel like to use.
+The first design wasn't wrong; it solved the demo case. The cwd-first design solves the **actual usage** case. Asking "what does the developer actually do" surfaced the misalignment. The fix is small (one shared helper, four 5-line argparse changes) but meaningfully changes what the skills feel like to use.

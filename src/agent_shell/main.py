@@ -3,7 +3,7 @@
 POST /chat with header `X-Anthropic-Key: sk-ant-...` and JSON body
 {"messages": [...]} streams the conversation back as SSE events:
 
-  - event: text         (model text delta — full block, not delta-stream)
+  - event: text         (model text delta, full block, not delta-stream)
   - event: tool_use     (Claude calling a skill)
   - event: tool_result  (skill output)
   - event: done         (model finished, no more tool calls)
@@ -37,7 +37,7 @@ UI_DIR = REPO_ROOT / "ui"
 
 DEFAULT_MODEL = "claude-opus-4-7"  # strongest tool-routing + JSON summarisation in the lineup
 
-app = FastAPI(title="Claude Skills CI/CD — Agent Shell")
+app = FastAPI(title="Claude Skills CI/CD: Agent Shell")
 
 
 class ChatRequest(BaseModel):
@@ -52,7 +52,7 @@ def health() -> dict[str, str]:
 
 @app.get("/skills")
 def list_skills_endpoint() -> list[dict]:
-    """Public — let UI render a sidebar of available skills."""
+    """Public endpoint that lets the UI render a sidebar of available skills."""
     return [
         {"name": t["name"], "description": t["description"]}
         for t in load_skills(SKILLS_DIR)
@@ -77,7 +77,7 @@ async def chat(
         "You have access to 4 CI/CD skills (lint-and-test, build-and-release, "
         "dependency-audit, security-scan). When the user asks for one, use the "
         "matching tool. Surface the skill's JSON output to the user in a clear, "
-        "human-readable form — call out failures and missing scanner binaries "
+        "human-readable form. Call out failures and missing scanner binaries "
         "honestly."
     )
 

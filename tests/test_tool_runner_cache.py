@@ -62,7 +62,7 @@ def test_identical_calls_short_circuit_via_cache(tmp_path: Path):
 
 def test_script_ok_false_results_are_cached(tmp_path: Path):
     """ok=false from the script (e.g. unsupported language, no manifest found)
-    is deterministic given the repo state — caching it is fine and gives the
+    is deterministic given the repo state, so caching it is fine and gives the
     user fast repeat answers. Infrastructure failures (clone failed, binary
     missing, JSON parse failed) bypass cache_store via early returns in
     run_skill, so transient failures still get a fresh attempt next time.

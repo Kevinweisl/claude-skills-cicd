@@ -7,8 +7,8 @@ tool_runner.run_skill with the inputs Claude *would* produce for each
 scenario. Proves: clone works, script runs, JSON parses, sandbox
 cleans up.
 
-The other half — Claude actually picking the right skill from a natural-
-language prompt — must be validated manually via the UI with your key.
+The other half (Claude actually picking the right skill from a natural-
+language prompt) must be validated manually via the UI with your key.
 That checklist lives at evals/agent-shell-e2e/manual-checklist.md.
 
 Usage:
@@ -77,7 +77,7 @@ SCENARIOS = [
     },
     {
         "n": 6,
-        "name": "URL guard — gitlab.com rejected",
+        "name": "URL guard: gitlab.com rejected",
         "skill": "lint-and-test",
         "input": {"repo": "https://gitlab.com/foo/bar"},
         "expect": "ok=false, error mentions only https://github.com/",

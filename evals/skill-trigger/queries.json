@@ -1,5 +1,5 @@
 {
-  "_comment": "Trigger-eval query corpus — 7 skills × (10 should + 10 should-not). Should-not queries include at least 3 sister-skill traps per skill (queries that plausibly belong to a sibling and test disambiguation). Each query is a natural user prompt; the eval asks Claude which skill it would invoke (or NONE).",
+  "_comment": "Trigger-eval query corpus: 7 skills × (10 should + 10 should-not). Should-not queries include at least 3 sister-skill traps per skill (queries that plausibly belong to a sibling and test disambiguation). Each query is a natural user prompt; the eval asks Claude which skill it would invoke (or NONE).",
   "_methodology": "Adapted from Anthropic skill-creator's run_loop.py. Vote across K=3 model families (DeepSeek + Nemotron + Mistral) per query for noise-robust scoring. Test set held out 40% per the methodology so iterative description edits don't overfit.",
   "skills": {
     "hello": {
@@ -10,7 +10,7 @@
         "verify the gateway and worker are talking",
         "run the hello skill",
         "echo back this string via the platform",
-        "is the skills queue working — try a hello",
+        "is the skills queue working, try a hello",
         "platform liveness check",
         "test that invoke + Postgres + worker → result actually fires",
         "run a no-op skill end-to-end",
@@ -38,7 +38,7 @@
         "check that ruff is clean and pytest is green",
         "run CI checks on this branch",
         "verify the code: lint + tests",
-        "is the build healthy — lint and unit tests please",
+        "is the build healthy, lint and unit tests please",
         "fail-fast pre-commit equivalent: lint then test",
         "ESLint + jest run on the frontend",
         "do the standard lint-and-test pipeline"
@@ -66,7 +66,7 @@
         "publish the wheel to our private index",
         "tag and release this commit",
         "build the container and push to the registry",
-        "deploy v3.0.0 — build, tag, and push",
+        "deploy v3.0.0, build, tag, and push",
         "release pipeline: build artifact then upload",
         "make a new release of the SDK"
       ],
@@ -170,7 +170,7 @@
         "log into example.com with these creds and download the dashboard PDF",
         "navigate to my bank's site and grab the latest statement",
         "fill out the form on this URL and submit",
-        "this page needs JS to render — get the content",
+        "this page needs JS to render, get the content",
         "click through the checkout wizard and verify the total",
         "scrape this auth-required dashboard",
         "automate the upload flow on this internal portal",
@@ -192,7 +192,7 @@
       ]
     }
   },
-  "_ambiguity_methodology": "Cross-domain prompts that genuinely span 2+ skills. Pass = picked is in {primary} ∪ also_acceptable. Tests robustness when a user's natural-language ask doesn't decompose neatly into one skill — the dominant intent should win, but adjacent skills are also acceptable. NONE is never acceptable here (a skill genuinely applies).",
+  "_ambiguity_methodology": "Cross-domain prompts that genuinely span 2+ skills. Pass = picked is in {primary} ∪ also_acceptable. Tests robustness when a user's natural-language ask doesn't decompose neatly into one skill; the dominant intent should win, but adjacent skills are also acceptable. NONE is never acceptable here (a skill genuinely applies).",
   "ambiguity_cases": [
     {
       "query": "lint, test, then audit our deps for CVEs",
@@ -204,7 +204,7 @@
       "query": "release this once lint passes",
       "primary_skill": "lint-and-test",
       "also_acceptable": ["build-and-release"],
-      "note": "Lint-first phrasing — lint is the gating verb. build-and-release after lint passes is also defensible"
+      "note": "Lint-first phrasing; lint is the gating verb. build-and-release after lint passes is also defensible"
     },
     {
       "query": "before I publish, scan the source for hardcoded keys and audit deps",
@@ -213,7 +213,7 @@
       "note": "Two scan asks; gitleaks (security-scan) is the more specific match for 'hardcoded keys' even though deps audit is also requested"
     },
     {
-      "query": "is this repo safe to release — check vulns and secrets",
+      "query": "is this repo safe to release, check vulns and secrets",
       "primary_skill": "security-scan",
       "also_acceptable": ["dependency-audit"],
       "note": "'vulns and secrets' splits across the two scan skills; either is a valid first call"
@@ -222,10 +222,10 @@
       "query": "make sure ruff passes and there's no leaked AWS keys",
       "primary_skill": "lint-and-test",
       "also_acceptable": ["security-scan"],
-      "note": "ruff is unambiguous lint; AWS keys is unambiguous gitleaks — Claude must pick one to start"
+      "note": "ruff is unambiguous lint; AWS keys is unambiguous gitleaks; Claude must pick one to start"
     },
     {
-      "query": "ship v2.4.0 — but only if pip-audit comes back clean",
+      "query": "ship v2.4.0, but only if pip-audit comes back clean",
       "primary_skill": "dependency-audit",
       "also_acceptable": ["build-and-release"],
       "note": "build-and-release is the goal but conditioned on dependency-audit passing first; either is valid"
@@ -234,7 +234,7 @@
       "query": "run all the CI checks: lint, test, audit, scan",
       "primary_skill": "lint-and-test",
       "also_acceptable": ["dependency-audit", "security-scan"],
-      "note": "Explicit 4-skill compound — any of the read-only skills is a valid first move; build-and-release is NOT acceptable because it's not a CI check"
+      "note": "Explicit 4-skill compound; any of the read-only skills is a valid first move; build-and-release is NOT acceptable because it's not a CI check"
     },
     {
       "query": "find SQL injection in our handlers and check if our ORM has any CVEs",
@@ -246,10 +246,10 @@
       "query": "do a complete pre-release check on the repo",
       "primary_skill": "lint-and-test",
       "also_acceptable": ["dependency-audit", "security-scan"],
-      "note": "Vague 'complete check' — any of the three read-only skills is a defensible first step. build-and-release would be wrong (release is not the action requested)"
+      "note": "Vague 'complete check'; any of the three read-only skills is a defensible first step. build-and-release would be wrong (release is not the action requested)"
     },
     {
-      "query": "I'm about to npm publish — is everything green",
+      "query": "I'm about to npm publish, is everything green",
       "primary_skill": "lint-and-test",
       "also_acceptable": ["dependency-audit", "security-scan"],
       "note": "'Everything green' implies CI gates, not the publish itself. Build-and-release is wrong because the user is checking before pushing the publish button"

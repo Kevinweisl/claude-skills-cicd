@@ -1,4 +1,4 @@
-// Agent Shell UI — vanilla JS, sessionStorage for API key, SSE streaming.
+// Agent Shell UI: vanilla JS, sessionStorage for API key, SSE streaming.
 
 const keyInput = document.getElementById("api-key");
 const keyStatus = document.getElementById("key-status");
@@ -7,7 +7,7 @@ const userInput = document.getElementById("user-input");
 const convo = document.getElementById("conversation");
 const skillList = document.getElementById("skill-list");
 
-// ── API key (sessionStorage — clears on tab close) ─────────────────────────
+// ── API key (sessionStorage; clears on tab close) ─────────────────────────
 const stored = sessionStorage.getItem("anthropic_key");
 if (stored) { keyInput.value = stored; keyStatus.textContent = "key set"; }
 keyInput.addEventListener("change", () => {

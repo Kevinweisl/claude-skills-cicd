@@ -1,4 +1,4 @@
-"""Trigger-eval runner — quantifies whether each skill's SKILL.md description
+"""Trigger-eval runner: quantifies whether each skill's SKILL.md description
 triggers Claude precisely.
 
 Methodology adapted from Anthropic's skill-creator (`run_loop.py`):
@@ -13,7 +13,7 @@ Methodology adapted from Anthropic's skill-creator (`run_loop.py`):
 Reproducing this run:
   Requires NVIDIA NIM API access (set NIM_API_KEY env var) plus the
   `shared.llm_client.vote_role` helper that this repo's split-off doesn't
-  ship — it lives in the original mono-repo because three repos share it.
+  ship; it lives in the original mono-repo because three repos share it.
   The runner therefore lazy-imports it inside main(); the file can be read
   / inspected / linted without the dep, but a real run will fail with a
   clear ImportError if you try to execute it standalone.
@@ -104,7 +104,7 @@ AVAILABLE SKILLS:
 
 {skills_block}
 
-Reply with ONLY the JSON object below — no prose, no markdown:
+Reply with ONLY the JSON object below. No prose, no markdown:
 {{"skill": "<one of: {', '.join(skill_descs)}, NONE>"}}
 """
     return [
@@ -269,7 +269,7 @@ async def run_eval(queries_file: Path, skills_dir: Path,
                 "duration_s": round(duration_s, 3),
             })
 
-    # Cross-domain ambiguity cases — pass = picked in {primary} ∪ also_acceptable
+    # Cross-domain ambiguity cases: pass = picked in {primary} ∪ also_acceptable
     ambiguity_results: list[dict] = []
     cases = spec.get("ambiguity_cases", [])
     if cases and (only_ambiguity or not only_skill):
@@ -357,7 +357,7 @@ def print_markdown_report(report: dict) -> None:
         row = [f"**{gt}**"]
         for col in skills + ["ERROR"]:
             count = report["confusion_matrix"][gt].get(col, 0)
-            row.append(str(count) if count else "—")
+            row.append(str(count) if count else ".")
         print("| " + " | ".join(row) + " |")
 
     # Notable misses
@@ -383,7 +383,7 @@ def print_markdown_report(report: dict) -> None:
             1 for a in amb if a.get("voters_in_allowed_count", 0) > 0
         )
         print()
-        print(f"## Ambiguity cases — {passed}/{len(amb)} pass (strict majority); "
+        print(f"## Ambiguity cases: {passed}/{len(amb)} pass (strict majority); "
               f"{any_voter_passed}/{len(amb)} pass (lenient: any voter in allowed)")
         print()
         print("| # | Query | Picked | Allowed | Pass? |")

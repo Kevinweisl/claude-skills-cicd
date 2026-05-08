@@ -1,4 +1,4 @@
-# Agent Shell — Manual UI Checklist
+# Agent Shell: Manual UI Checklist
 
 > The 8 tool_runner-layer scenarios in `scripts/e2e_real_repos.py` proved
 > the **clone → script → JSON parse** half of the web shell works end-to-end

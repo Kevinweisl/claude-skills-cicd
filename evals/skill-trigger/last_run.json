@@ -88,7 +88,7 @@
     {
       "target_skill": "hello",
       "expected_label": "should_trigger",
-      "query": "is the skills queue working \u2014 try a hello",
+      "query": "is the skills queue working, try a hello",
       "picked": "hello",
       "confidence": 1.0,
       "votes": [
@@ -445,7 +445,7 @@
     {
       "target_skill": "lint-and-test",
       "expected_label": "should_trigger",
-      "query": "is the build healthy \u2014 lint and unit tests please",
+      "query": "is the build healthy, lint and unit tests please",
       "picked": "lint-and-test",
       "confidence": 1.0,
       "votes": [
@@ -802,7 +802,7 @@
     {
       "target_skill": "build-and-release",
       "expected_label": "should_trigger",
-      "query": "deploy v3.0.0 \u2014 build, tag, and push",
+      "query": "deploy v3.0.0, build, tag, and push",
       "picked": "build-and-release",
       "confidence": 1.0,
       "votes": [
@@ -2094,7 +2094,7 @@
     {
       "target_skill": "browser-task",
       "expected_label": "should_trigger",
-      "query": "this page needs JS to render \u2014 get the content",
+      "query": "this page needs JS to render, get the content",
       "picked": "browser-task",
       "confidence": 1.0,
       "votes": [
@@ -2487,8 +2487,8 @@
   },
   "elapsed_s": 1232.5,
   "skill_descriptions_evaluated": {
-    "browser-task": "Drive a real Chromium browser (via Playwright) to complete a multi-step web\ntask described in natural language \u2014 login, fill forms, navigate, click,\nextract page content, take screenshots. Use this when the user asks to\n\"log into a website and download X\", \"scrape this dashboard that requires\nauthentication\", \"fill out the form on this page\", \"navigate the site and\nclick through the wizard\", \"get the content from this JavaScript-rendered\npage\", \"verify the news on Reuters about Apple's 10-K disclosures\", or any\ntask that needs an actual browser (cookies, JS execution, DOM interaction).\nDo NOT use for: simple HTTP GETs of static pages (use a regular fetch),\nparsing structured documents like SEC filings (use sec-extract-10k), or\nbuild/release pipelines (use build-and-release). Long-running (minutes),\nstateful (cookies + selector cache), self-correcting (7-tier locator ladder).\n",
-    "build-and-release": "Build a Python wheel, npm package, or container image AND optionally push it\nto a registry \u2014 a side-effecting write operation. Use this when the user\nasks to \"release v1.2.3\", \"publish to PyPI\", \"twine upload\", \"npm publish\",\n\"ship a new version\", \"build and push the docker image to ghcr\", \"cut a\ngithub release\", \"tag and push\", \"deploy the SDK\", or any explicit\npublish/release request. For running tests or linters, use lint-and-test.\nFor SAST or secret scans on the source, use security-scan. For dependency\nCVE checks, use dependency-audit. This skill is human-gated:\ndisable-model-invocation prevents auto-routing \u2014 only explicit invocation\nruns it.\n",
+    "browser-task": "Drive a real Chromium browser (via Playwright) to complete a multi-step web\ntask described in natural language: login, fill forms, navigate, click,\nextract page content, take screenshots. Use this when the user asks to\n\"log into a website and download X\", \"scrape this dashboard that requires\nauthentication\", \"fill out the form on this page\", \"navigate the site and\nclick through the wizard\", \"get the content from this JavaScript-rendered\npage\", \"verify the news on Reuters about Apple's 10-K disclosures\", or any\ntask that needs an actual browser (cookies, JS execution, DOM interaction).\nDo NOT use for: simple HTTP GETs of static pages (use a regular fetch),\nparsing structured documents like SEC filings (use sec-extract-10k), or\nbuild/release pipelines (use build-and-release). Long-running (minutes),\nstateful (cookies + selector cache), self-correcting (7-tier locator ladder).\n",
+    "build-and-release": "Build a Python wheel, npm package, or container image AND optionally push it\nto a registry, a side-effecting write operation. Use this when the user\nasks to \"release v1.2.3\", \"publish to PyPI\", \"twine upload\", \"npm publish\",\n\"ship a new version\", \"build and push the docker image to ghcr\", \"cut a\ngithub release\", \"tag and push\", \"deploy the SDK\", or any explicit\npublish/release request. For running tests or linters, use lint-and-test.\nFor SAST or secret scans on the source, use security-scan. For dependency\nCVE checks, use dependency-audit. This skill is human-gated:\ndisable-model-invocation prevents auto-routing; only explicit invocation\nruns it.\n",
     "dependency-audit": "Scan a repository's dependency manifests (pyproject.toml/requirements.txt,\npackage.json/package-lock.json, Cargo.toml, go.mod) for KNOWN VULNERABILITIES\nin third-party libraries using OSV/GHSA advisory databases. Use this when\nthe user asks to \"audit dependencies\", \"run pip-audit\", \"npm audit\", \"check\nfor vulnerable packages\", \"are any of my deps CVE-flagged\", \"is lodash\nsafe\", \"any CVEs in our packages\", \"scan our requirements.txt\", \"check our\nCargo.lock for advisories\", or \"any GHSA hits in our manifest\". For SAST or\nsecret scans on YOUR OWN source code, use security-scan. For lint/test, use\nlint-and-test. For build/publish, use build-and-release. Read-only. Returns\nSARIF-format vulnerability findings.\n",
     "hello": "A dummy test skill that echoes back its input. Use only for platform health\nchecks, smoke testing the invoke pipeline, or demonstrating the request/response\nflow. This skill exists to verify gateway \u2192 Postgres queue \u2192 worker \u2192 result\nend-to-end without external dependencies.\n",
     "lint-and-test": "Run the lint-then-test pipeline on a Python or Node repo at a specific commit\nand return a structured pass/fail report. Use this when the user asks to\n\"lint and test\", \"run CI checks\", \"run pytest\", \"type-check with mypy\",\n\"run prettier and the unit tests\", \"make sure ruff is clean and tests pass\",\n\"ESLint + jest\", or any combined static-check-plus-test request on a\nrepository. For dependency CVE checks, use dependency-audit instead. For\nSAST or hard-coded-secret scans, use security-scan. For building or\npublishing artifacts, use build-and-release. Read-only. Returns {ok,\nlint_passed, test_passed, summary, exit_code, durations}.\n",

@@ -1,6 +1,6 @@
 {
   "n": 6,
-  "name": "URL guard \u2014 gitlab.com rejected",
+  "name": "URL guard: gitlab.com rejected",
   "skill": "lint-and-test",
   "input": {
     "repo": "https://gitlab.com/foo/bar"

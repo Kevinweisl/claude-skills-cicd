@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""dependency-audit skill — scan dependency manifests for known CVEs.
+"""dependency-audit skill: scan dependency manifests for known CVEs.
 
 Detects ecosystems (python / node / rust / go) from manifest files and
 fans out to the appropriate auditor (pip-audit, npm audit, cargo audit,
@@ -41,7 +41,7 @@ import hashlib
 
 
 def _manifest_hash(repo: Path) -> str:
-    """Hash of all manifest files combined — used in cache_key."""
+    """Hash of all manifest files combined; used in cache_key."""
     h = hashlib.sha256()
     for f in ("pyproject.toml", "requirements.txt", "package-lock.json",
               "yarn.lock", "Cargo.lock", "go.sum"):

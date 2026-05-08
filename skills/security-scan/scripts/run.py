@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""security-scan skill — SAST + secrets + (optional) container CVE scan.
+"""security-scan skill: SAST + secrets + (optional) container CVE scan.
 
 Runs Semgrep + Bandit (SAST) and gitleaks (secrets) in parallel, and
 optionally trivy (container CVE) when --scan-types includes "container"
@@ -49,7 +49,7 @@ _SEV_RANK = {
 
 async def _run_async(cmd: list[str], cwd: str | None = None,
                      timeout_s: float = 300.0) -> dict:
-    """Async subprocess runner — security-scan needs parallelism."""
+    """Async subprocess runner; security-scan needs parallelism."""
     import time
     t0 = time.perf_counter()
     try:

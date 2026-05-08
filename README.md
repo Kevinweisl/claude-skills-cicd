@@ -79,7 +79,7 @@ What you'll need installed:
 | Requirement | Why |
 |---|---|
 | Python 3.12+, `git` | The skill scripts are Python; clones use git. Both already present in most dev environments. |
-| Scanner binaries (`ruff`, `pip-audit`, `semgrep`, ...) | Install only what you'll actually use. Missing ones don't crash — the skill output includes an `install_hint` field naming the exact command (e.g. `pip install pip-audit`, `brew install gitleaks`) so Claude can suggest it back to you. Per-skill list in [FAQ Q4](#q4-which-scanner-binaries-do-i-need-to-install). |
+| Scanner binaries (`ruff`, `pip-audit`, `semgrep`, ...) | Install only what you'll actually use. Missing ones don't crash; the skill output includes an `install_hint` field naming the exact command (e.g. `pip install pip-audit`, `brew install gitleaks`) so Claude can suggest it back to you. Per-skill list in [FAQ Q4](#q4-which-scanner-binaries-do-i-need-to-install). |
 
 > Other install paths (manual file copy, local `--plugin-dir` for hacking on a skill) and other gotchas live in the [FAQ](#faq) at the bottom.
 
@@ -264,7 +264,7 @@ See [The 4 skills](#the-4-skills) and [Security boundaries](#security-boundaries
 
 ### Q4. Which scanner binaries do I need to install?
 
-Only the ones for the skills you'll actually use. Each skill detects its tools at runtime; if a binary is missing, the skill returns an `install_hint` field with the exact install command instead of crashing — Claude reads it and suggests the command back to you in chat.
+Only the ones for the skills you'll actually use. Each skill detects its tools at runtime; if a binary is missing, the skill returns an `install_hint` field with the exact install command instead of crashing. Claude reads it and suggests the command back to you in chat.
 
 | Skill | Required binaries | Install hint |
 |---|---|---|

@@ -99,7 +99,7 @@ def load_skills(skills_dir: Path) -> list[dict]:
     """Return list of Anthropic tool definitions, one per skill folder.
 
     Skips underscore-prefixed dirs (e.g. `_shared`). Only includes skills
-    that have an `input_schema` defined here — others are silently dropped
+    that have an `input_schema` defined here; others are silently dropped
     because we can't surface them to the SDK without a schema.
     """
     tools: list[dict] = []

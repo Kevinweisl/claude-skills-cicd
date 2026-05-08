@@ -1,4 +1,4 @@
-# 2026-04-30 — Strategy and task selection
+# 2026-04-30: Strategy and task selection
 
 The strategic dialogue with Claude Code before any code was written. Compressed; the actual session was longer.
 
@@ -12,10 +12,10 @@ The brief contains 3 tasks (CI/CD Skills, Browser Agent, SEC 10-K Extractor). At
 
 ## Options Claude surfaced
 
-1. **Do all three tasks** — most "complete" looking, but ~75-115h at A-level depth. Exceeds budget.
-2. **Do all three + invent a Task D that integrates them** — my initial preference, to demonstrate "synthesis ability".
-3. **Do 2 deeply + 1 lightly + integration narrative** — middle ground.
-4. **Do 1 main + 1 supporting + 1 platform layer** — Claude's pushback proposal.
+1. **Do all three tasks**: most "complete" looking, but ~75-115h at A-level depth. Exceeds budget.
+2. **Do all three + invent a Task D that integrates them**: my initial preference, to demonstrate "synthesis ability".
+3. **Do 2 deeply + 1 lightly + integration narrative**: middle ground.
+4. **Do 1 main + 1 supporting + 1 platform layer**: Claude's pushback proposal.
 
 ## Decision
 
@@ -34,7 +34,7 @@ Option 4. Specifically:
 
 ## Why the first integration narrative was rejected
 
-First proposal: **"SEC AI Analysis Platform"** — Task 2 fetches DEF 14A for incorporated-by-reference resolution in Task 3.
+First proposal: **"SEC AI Analysis Platform"**, where Task 2 fetches DEF 14A for incorporated-by-reference resolution in Task 3.
 
 A research subagent dispatched on Browser Agent feasibility came back with: **DEF 14A is a standard EDGAR form, pure-API access works, no browser needed**. Forcing a browser into a SEC narrative would have been transparent.
 
@@ -48,4 +48,4 @@ The decision NOT to do Task D is a more interesting signal than doing it would h
 
 ## Outcome
 
-7-day plan locked: Task 1 foundation Day 1, Task 3 Days 2-4, Task 1 skills Days 4-5, Task 2 Days 5-6, finalise Day 7. The Task 1 implementation shape (skills as a Claude Code feature vs skills as an HTTP service) was decided separately on 2026-05-03 — see [skills-as-feature-vs-skills-as-service](2026-05-03-skills-as-feature-vs-skills-as-service.md).
+7-day plan locked: Task 1 foundation Day 1, Task 3 Days 2-4, Task 1 skills Days 4-5, Task 2 Days 5-6, finalise Day 7. The Task 1 implementation shape (skills as a Claude Code feature vs skills as an HTTP service) was decided separately on 2026-05-03; see [skills-as-feature-vs-skills-as-service](2026-05-03-skills-as-feature-vs-skills-as-service.md).

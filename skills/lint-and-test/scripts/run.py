@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""lint-and-test skill — execute ruff + pytest (Python) or npm lint+test (Node).
+"""lint-and-test skill: execute ruff + pytest (Python) or npm lint+test (Node).
 
 Usage (called by Claude via Bash, or directly):
     python skills/lint-and-test/scripts/run.py [--repo-path PATH] [options]

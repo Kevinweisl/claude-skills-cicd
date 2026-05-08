@@ -1,4 +1,4 @@
-"""Tests for skills/_shared/git_fetch.py — URL guard + shallow clone."""
+"""Tests for skills/_shared/git_fetch.py: URL guard + shallow clone."""
 
 from __future__ import annotations
 

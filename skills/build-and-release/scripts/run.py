@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build-and-release skill — build wheel / npm tarball / docker image.
+"""build-and-release skill: build wheel / npm tarball / docker image.
 
 Side-effecting: pushes to a registry only when --no-dry-run is passed AND
 the build succeeded. Idempotent by content digest (re-pushing the same

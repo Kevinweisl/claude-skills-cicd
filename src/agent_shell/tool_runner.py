@@ -47,7 +47,7 @@ def _cache_key(name: str, input_args: dict) -> str:
 
 
 def _is_cacheable(name: str, input_args: dict) -> bool:
-    """build-and-release with no_dry_run is a side-effecting write — never cache.
+    """build-and-release with no_dry_run is a side-effecting write; never cache.
     Even though registries reject duplicate digests, the user explicitly asking
     again may indicate they rotated credentials or hit a transient registry
     error, so re-execute rather than mask with stale cache."""
@@ -70,7 +70,7 @@ def _cache_store(key: str, result: dict) -> None:
 
 
 def cache_clear() -> None:
-    """Test hook — wipe the in-memory cache."""
+    """Test hook: wipe the in-memory cache."""
     _RESULT_CACHE.clear()
 
 
@@ -175,7 +175,7 @@ def run_skill(name: str, input_args: dict) -> dict:
         # Cache anything the script returned as valid JSON, regardless of
         # the script's own ok flag. Script-side ok=false (e.g. "unsupported
         # language", "no manifest found", a captured lint diagnostic) is
-        # deterministic given the repo state — re-running won't change it
+        # deterministic given the repo state, so re-running won't change it
         # and the user gets a fast repeat answer. Infrastructure failures
         # (clone failed, binary not found, script crashed) bypass this
         # branch via early return above, so transient failures still

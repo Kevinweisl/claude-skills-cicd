@@ -113,7 +113,7 @@ def _estimate_token_cost(report: dict) -> dict:
         "total_tokens_estimate": prompt_tokens + output_tokens,
         "estimated_cost_usd": round(cost_usd, 4),
         "method": f"char-based estimate (~{CHARS_PER_TOKEN} chars/token), "
-                  f"output capped at 30 tok/query — order-of-magnitude only",
+                  f"output capped at 30 tok/query (order-of-magnitude only)",
     }
 
 
@@ -137,7 +137,7 @@ def _vote_agreement(per_query: list[dict]) -> dict:
 
 def build_report(run: dict) -> str:
     lines: list[str] = []
-    lines.append("# Trigger Eval — Cost & Latency Analysis")
+    lines.append("# Trigger Eval: Cost & Latency Analysis")
     lines.append("")
 
     summary = run.get("per_skill_summary", {})

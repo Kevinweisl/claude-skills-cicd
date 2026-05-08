@@ -1,4 +1,4 @@
-# Trigger Eval — Cost & Latency Analysis
+# Trigger Eval: Cost & Latency Analysis
 
 ## Per-skill TPR / FPR (recap)
 
@@ -24,7 +24,7 @@
 - Output tokens (estimate): 8,400
 - Total tokens (estimate): 378,185
 - Estimated cost: ~$0.1702 USD
-- Method: char-based estimate (~4 chars/token), output capped at 30 tok/query — order-of-magnitude only
+- Method: char-based estimate (~4 chars/token), output capped at 30 tok/query (order-of-magnitude only)
 
 ## K-voter agreement
 

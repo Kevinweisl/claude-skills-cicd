@@ -1,4 +1,4 @@
-# 2026-05-07 — Zeabur deploy: which scanner binaries to bake into the Dockerfile
+# 2026-05-07: Zeabur deploy and which scanner binaries to bake into the Dockerfile
 
 ## Context
 
@@ -84,7 +84,7 @@ Image doesn't need them at runtime. Halves the build context.
 
 ### `$PORT` injected by Zeabur
 
-Zeabur's runtime sets `$PORT`. CMD binds to `0.0.0.0:${PORT}` (the `0.0.0.0` part is critical — `127.0.0.1` is unreachable from outside the container).
+Zeabur's runtime sets `$PORT`. CMD binds to `0.0.0.0:${PORT}` (the `0.0.0.0` part is critical; `127.0.0.1` is unreachable from outside the container).
 
 ```dockerfile
 CMD ["sh", "-c", "python -m uvicorn agent_shell.main:app --host 0.0.0.0 --port ${PORT} --app-dir src"]
@@ -106,7 +106,7 @@ This deploy is intended for trusted single-user evaluation, not multi-tenant pro
 
 ## What this captures for the interviewer
 
-The Dockerfile is intentionally minimal. The graceful-degradation contract (missing binary → empty result, never crash) lets us **ship a small image without sacrificing correctness** — skills that can't run on the demo image fail honestly rather than silently returning fake-success. That's the same property the brief's "honest failure modes" axis is grading for.
+The Dockerfile is intentionally minimal. The graceful-degradation contract (missing binary → empty result, never crash) lets us **ship a small image without sacrificing correctness**; skills that can't run on the demo image fail honestly rather than silently returning fake-success. That's the same property the brief's "honest failure modes" axis is grading for.
 
 ## Outcome
 
@@ -117,4 +117,4 @@ Dockerfile validates with `docker buildx build --check`. Image size manageable. 
 3. `$PORT` injected; container binds `0.0.0.0:$PORT`.
 4. Open `*.zeabur.app`, paste your `sk-ant-*` key, ask Claude to audit a repo.
 
-(As of writing, the Zeabur deploy is paused awaiting answer on whether to buy a Zeabur server — see project memory for context.)
+(As of writing, the Zeabur deploy is paused awaiting answer on whether to buy a Zeabur server. See project memory for context.)
