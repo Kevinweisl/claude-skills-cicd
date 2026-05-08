@@ -145,3 +145,72 @@ button {
 }
 button:hover { background: #1a7f37; }
 button:disabled { background: #94d3a2; cursor: not-allowed; }
+
+/* ── Narrow viewports (phones, ≤768px) ───────────────────────────── */
+/* Desktop: 280px sidebar + main. On a phone that overflows + the
+   header's 320px-wide API-key input pushes layout horizontally.
+   On mobile we collapse to a single column, hide the skill sidebar
+   (skills are still discoverable via /skills and the README), and
+   let the API-key input wrap onto its own row in the header. */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    /* dvh tracks the *dynamic* viewport height — without this, mobile
+       Safari's collapsing URL bar causes bottom-cutoff on the chat box. */
+    height: 100dvh;
+  }
+
+  header {
+    grid-column: 1;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+    height: auto;
+    min-height: 56px;
+  }
+  header h1 { font-size: 0.9rem; }
+  header input {
+    width: 100%;
+    flex: 1 1 100%;
+    order: 99;        /* drop key input onto its own row */
+  }
+  header small { display: none; }   /* the long descriptor text steals too much width */
+
+  aside { display: none; }
+
+  main { padding: 10px; }
+
+  .msg {
+    max-width: 100%;
+    font-size: 0.92rem;
+  }
+
+  .tool-use, .tool-result {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+  pre {
+    font-size: 0.7rem;
+    max-height: 240px;
+  }
+
+  form {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  textarea {
+    font-size: 0.95rem;
+    padding: 8px;
+  }
+  button {
+    padding: 0 14px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra-narrow (≤380px, e.g. iPhone SE in portrait): stack form */
+@media (max-width: 380px) {
+  form { flex-direction: column; }
+  button { width: 100%; padding: 10px; }
+}
