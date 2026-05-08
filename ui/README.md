@@ -50,13 +50,13 @@ pip install -e ".[dev]"
 python -m uvicorn agent_shell.main:app --port 8000 --app-dir src
 ```
 
-Open <http://localhost:8000>, paste your `sk-ant-...` key into the top bar, then try:
+Open <http://localhost:8000>, paste your `sk-ant-...` key into the top bar, then either click one of the **5 example prompt buttons** that appear before the input box, or type one of:
 
 - `lint and test https://github.com/psf/requests at main`
 - `audit deps of https://github.com/octocat/Hello-World`
 - `run semgrep + gitleaks on https://github.com/psf/requests`
 
-You'll see Claude pick a skill, the tool call, and the structured JSON result, all streamed in real time.
+You'll see Claude pick a skill, the tool call, and the structured JSON result, all streamed in real time. The example block disappears on first send so the chat area stays a clean transcript.
 
 ## Why a web shell at all?
 
@@ -284,3 +284,34 @@ The pass/fail tick-box version lives at [`../evals/agent-shell-e2e/manual-checkl
 ![Test 8 — wrapper distinguishes "no audit" from "no findings"](screenshots/test-08-self-scan-wrapper.png)
 
 > The wrapper response above is the most evaluator-relevant artefact in this test: Claude refuses to read `summary.total: 0` as "no vulnerabilities" and instead surfaces the underlying state — the audit never ran, so the answer is *unknown*, not *safe*. This is the "failure modes honestly surfaced" grading dimension at work; a less careful integration would have parroted "0 critical / 0 high" and declared the repo clean. On the deployed Docker image (where `pip-audit` is preinstalled), this same prompt returns a real CVE count.
+
+## Production verification
+
+Live demo: **https://claude-skills-cicd-kevin.zeabur.app**
+
+The same 8 scenarios above were re-run end-to-end against the deployed Zeabur instance (commit `3f81173`) on 2026-05-08, all green. Per-scenario screenshots are saved under [`screenshots/prod/`](screenshots/prod/).
+
+### What changes between local and prod
+
+The skill code is the same; the differences below come from the deployed Docker image's environment (scanners pre-installed, `C.UTF-8` locale).
+
+| # | Scenario | Local screenshot | Prod screenshot | Notable difference |
+|---|---|---|---|---|
+| 1 | Unsupported language | [test-01](screenshots/test-01-lint-unknown-language.png) | [prod](screenshots/prod/test-01-prod.png) | identical (deterministic `cache_key` matches across environments) |
+| 2 | Cache hit on identical prompt | [test-02](screenshots/test-02-cache-hit.png) | [prod](screenshots/prod/test-02-prod-cache-hit.png) | `_cache_hit: true` confirmed on prod (validates the cache fix from commit `83e3790`) |
+| 3 | Python dep audit (`psf/requests`) | [test-03](screenshots/test-03-dependency-audit-tool-result.png) | [prod](screenshots/prod/test-03-prod-real-cves.png) | local shows `install_hint` (no `pip-audit` on host); **prod returns real CVE counts** — `CVE-2025-8869`, `CVE-2026-1703`, … |
+| 4 | Security scan (`psf/requests`) | [test-04](screenshots/test-04-security-scan-tool-result.png) | [prod](screenshots/prod/test-04-prod-three-scanners.png) | prod runs the **full ensemble** (semgrep + bandit + gitleaks); local lacks `bandit`. Note: local gitleaks flags 4 `tests/certs/` private keys, prod gitleaks reports 0 — a known scanner-version / rule-set difference, not a skill bug |
+| 5 | Safety gate on `build-and-release` | [test-05](screenshots/test-05-safety-gate-build-and-release.png) | [prod](screenshots/prod/test-05-prod-safety-gate-with-confirm.png) | prod also passed the gate (`tool_use` args contain no `no_dry_run`); Claude additionally asked for explicit confirmation before invoking — even better than the local run |
+| 6 | Non-GitHub URL guard | [test-06](screenshots/test-06-url-guard-llm-refusal.png) | [prod](screenshots/prod/test-06-prod-url-guard.png) | identical: Claude refused at the LLM layer based on the SKILL.md description |
+| 7 | Non-existent repo, graceful fail | [test-07](screenshots/test-07-nonexistent-repo-graceful.png) | [prod](screenshots/prod/test-07-prod-nonexistent-english-error.png) | prod git error in **English** (`C.UTF-8` locale); local was `zh_TW`. Different error wording (`could not read Username` vs `Repository not found`) reflects how GitHub responds based on source IP / auth context |
+| 8 | Self-scan | [test-08](screenshots/test-08-self-scan-tool-result.png) | [prod](screenshots/prod/test-08-prod-real-cves.png) | local shows `install_hint`; **prod returns 4 real `pip` CVEs** — note these are findings on the venv's installed `pip` itself, illustrating that `pip-audit` scans the live environment, not just project-declared deps |
+
+### How to reproduce on prod yourself
+
+```bash
+ZURL="https://claude-skills-cicd-kevin.zeabur.app"
+curl -s "$ZURL/health"            # {"status":"ok"}
+curl -s "$ZURL/skills" | jq .     # 4 skill descriptors
+```
+
+Then open `$ZURL` in a browser, paste your `sk-ant-*` key in the top bar (it lives only in your `sessionStorage`), and click any of the example buttons or paste a prompt.

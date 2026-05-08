@@ -19,7 +19,36 @@
   <p class="hint">Tip: tell Claude what you want in natural language; it picks the skill from these descriptions.</p>
 </aside>
 <main>
-  <div id="conversation" aria-live="polite"></div>
+  <div id="conversation" aria-live="polite">
+    <div id="examples">
+      <p class="lead">Try one of these to get started — each click sends a real prompt:</p>
+      <button class="example" type="button"
+              data-prompt="lint and test https://github.com/psf/requests at main">
+        Lint &amp; test <code>psf/requests</code>
+        <small>ruff + pytest pipeline on a real Python project</small>
+      </button>
+      <button class="example" type="button"
+              data-prompt="audit deps of https://github.com/psf/requests at main">
+        Audit deps of <code>psf/requests</code>
+        <small>pip-audit against OSV / GHSA — real CVE counts</small>
+      </button>
+      <button class="example" type="button"
+              data-prompt="run semgrep + gitleaks on https://github.com/psf/requests at main">
+        Security scan <code>psf/requests</code>
+        <small>SAST + secret scan ensemble (semgrep + bandit + gitleaks)</small>
+      </button>
+      <button class="example" type="button"
+              data-prompt="build a wheel for https://github.com/octocat/Hello-World, version 0.1.0">
+        Build a wheel (safety-gate demo)
+        <small>shows that release operations stay in dry-run unless explicitly confirmed</small>
+      </button>
+      <button class="example" type="button"
+              data-prompt="audit deps of https://github.com/Kevinweisl/claude-skills-cicd at main">
+        Self-audit (this app's repo)
+        <small>scan the deps of the very service you're talking to</small>
+      </button>
+    </div>
+  </div>
   <form id="chat-form">
     <textarea id="user-input" rows="3"
               placeholder="lint and test https://github.com/octocat/Hello-World at master&#10;&#10;Enter to send · Shift+Enter for new line"

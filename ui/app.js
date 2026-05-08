@@ -79,6 +79,24 @@ userInput.addEventListener("keydown", (e) => {
   }
 });
 
+// Example prompt buttons. Each carries the exact text in data-prompt; click
+// fills the textarea and submits, mimicking the user typing it themselves.
+// The whole #examples block is removed on first form submit (whether
+// triggered by a button, Enter, or the Send button) so the chat area
+// becomes a clean transcript once the conversation starts.
+const examplesEl = document.getElementById("examples");
+if (examplesEl) {
+  examplesEl.querySelectorAll("button.example").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      userInput.value = btn.dataset.prompt;
+      form.requestSubmit();
+    });
+  });
+  form.addEventListener("submit", () => {
+    examplesEl.remove();
+  }, { once: true });
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = userInput.value.trim();

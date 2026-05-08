@@ -74,6 +74,47 @@ main {
   word-wrap: break-word;
   line-height: 1.5;
 }
+/* ── Example prompt buttons (first-load only, removed on first send) ── */
+#examples { padding: 8px 0; }
+#examples .lead {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: #57606a;
+}
+button.example {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  text-align: left;
+  background: white;
+  color: #0969da;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  /* override the default green submit-button styling */
+}
+button.example:hover {
+  background: #ddf4ff;
+  border-color: #0969da;
+}
+button.example code {
+  font-family: ui-monospace, "SF Mono", Monaco, monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: inherit;
+}
+button.example small {
+  display: block;
+  margin-top: 4px;
+  color: #57606a;
+  font-weight: 400;
+  font-size: 0.78rem;
+}
+
 .msg.user      { background: #ddf4ff; margin-left: auto; }
 .msg.assistant { background: #f6f8fa; border: 1px solid #d0d7de; }
 .msg.error     { background: #ffebe9; color: #82071e; border: 1px solid #ffcecb; }
