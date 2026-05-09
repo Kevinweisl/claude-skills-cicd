@@ -1,5 +1,13 @@
 # claude-skills-cicd
 
+## Live demo
+
+**https://claude-skills-cicd-kevin.zeabur.app**
+
+Bring your own `sk-ant-*` Anthropic key (browser-side, never persisted server-side; see [`ui/README.md`](ui/README.md) for the BYOK threat model). Type a request like "audit deps of https://github.com/psf/requests at main" and the matching skill streams output token-by-token over SSE.
+
+---
+
 Pre-release sanity-checking a repo today usually looks like this:
 
 ```bash
